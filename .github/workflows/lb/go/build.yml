@@ -1,0 +1,26 @@
+name: Run build
+on:
+  workflow_dispatch:
+  workflow_call:
+env:
+  GOPRIVATE: "github.com/mconf"
+jobs:
+  build:
+    name: Run build
+    runs-on: [self-hosted, ubuntu-20.04]
+    steps:
+      - name: Check out Source Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.16.6
+
+      - name: Configure Git to Access Private Modules
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Build
+        run: CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags '-linkmode=external' -o main .

@@ -1,0 +1,69 @@
+name: Run tests
+on:
+  workflow_dispatch:
+  workflow_call:
+env:
+  GOPRIVATE: "github.com/mconf"
+jobs:
+  tests:
+    name: Run tests
+    runs-on: [self-hosted, ubuntu-20.04]
+    steps:
+      - name: Check out Source Repository
+        uses: actions/checkout@v4
+
+      - name: Get Modified Go Files
+        id: changed-go-files
+        uses: tj-actions/changed-files@v44
+
+      - name: Set up Go
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.16.6
+
+      - name: Configure Git to Access Private Modules
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install Tparse Package
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        run: go install github.com/mfridman/tparse@v0.11.0
+
+      - name: Install Gocov Package
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        run: go install github.com/axw/gocov/gocov@v1.1.0
+
+      - name: Install Gocov-XML Package
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        run: go install github.com/AlekSi/gocov-xml@v1.1.0
+
+      - name: Test
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        run: go test -cover -v ./... -json | tparse -pass
+
+      - name: Generate Coverage File
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        run: gocov test ./... | gocov-xml > coverage.cobertura.xml
+
+      - name: Code Coverage Summary Report
+        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        uses: irongut/CodeCoverageSummary@v1.2.0
+        with:
+          filename: coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: "50 75"
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: ${{ contains(steps.changed-go-files.outputs.modified_files, '.go') && github.event_name == 'pull_request' }}
+        with:
+          recreate: true
+          path: code-coverage-results.md

@@ -1,0 +1,32 @@
+name: Run trivy on filesystem
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  trivy:
+    name: Run trivy check
+    runs-on: [self-hosted, ubuntu-20.04]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          ignore-unfixed: true
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+
+      - name: Post SARIF findings in the pull request
+        if: github.event_name == 'pull_request'
+        uses: sett-and-hive/sarif-to-comment-action@v2.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.head_ref }}
+          pr-number: ${{ github.event.number }}
+          sarif-file: trivy-results.sarif
+          title: Scan security issues
+          dry-run: false
