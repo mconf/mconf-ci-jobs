@@ -1,0 +1,21 @@
+name: Run build
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  Build:
+    runs-on: [self-hosted, ubuntu-20.04]
+    steps:
+      - name: Check out Source Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 12
+
+      - name: Clean Install Project
+        run: npm ci
+
+      - name: Build
+        run: npm run build

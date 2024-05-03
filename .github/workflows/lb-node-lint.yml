@@ -1,0 +1,24 @@
+name: Run lint
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  Lint:
+    runs-on: [self-hosted, ubuntu-20.04]
+    steps:
+      - name: Check out Source Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 12
+
+      - name: Clean Install Project
+        run: npm ci
+
+      - name: Install ESLint
+        run: npm install -g eslint
+
+      - name: Lint with ESLint
+        uses: stefanoeb/eslint-action@1.0.2
