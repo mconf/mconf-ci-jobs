@@ -10,18 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Trivy vulnerability scanner in repo mode
-        id: trivy-scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
           ignore-unfixed: true
-          format: template
+          format: "sarif"
+          output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
-          template: "../../trivy/template.tpl"
-          output: trivy.md
 
-      - name: Create comment
-        uses: peter-evans/create-or-update-comment@v4
+      - name: Post SARIF findings in the pull request
+        if: github.event_name == 'pull_request'
+        uses: sett-and-hive/sarif-to-comment-action@v2.0.1
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: "trivy.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.head_ref }}
+          pr-number: ${{ github.event.number }}
+          sarif-file: trivy-results.sarif
+          title: Scan security issues
+          dry-run: false
