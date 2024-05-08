@@ -17,8 +17,8 @@ jobs:
           ignore-unfixed: true
           format: template
           severity: "CRITICAL,HIGH"
-          template: "../../trivy/template.tpl"
-          output: trivy-high-critical.md
+          template: "@../../trivy/template.tpl"
+          output: trivy.md
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v4
