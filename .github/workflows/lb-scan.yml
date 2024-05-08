@@ -15,8 +15,10 @@ jobs:
         with:
           scan-type: "fs"
           ignore-unfixed: true
-          format: "table"
+          format: template
           severity: "CRITICAL,HIGH"
+          template: "@/github/workspace/trivy/template.tpl"
+          output: trivy-high-critical.md
 
       - uses: actions/github-script@v5
         with:
@@ -28,3 +30,8 @@ jobs:
               repo: context.repo.repo,
               body: `Trivy scan results:\n\`\`\`\n${{ steps.trivy-scan.outputs.stdout }}\n\`\`\``
             })
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: "trivy.md"
