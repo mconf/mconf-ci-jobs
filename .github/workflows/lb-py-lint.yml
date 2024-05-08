@@ -5,7 +5,9 @@ on:
       SRC_PATH:
         type: string
         required: true
-
+      TESTS_PATH:
+        type: string
+        required: true
 jobs:
   format-and-lint:
     runs-on: [self-hosted, ubuntu-20.04]
