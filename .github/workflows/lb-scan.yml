@@ -11,22 +11,26 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner in repo mode
+        id: trivy-scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
           ignore-unfixed: true
-          format: "sarif"
-          output: "trivy-results.sarif"
+          format: "table"
           severity: "CRITICAL,HIGH"
 
-      - name: Post SARIF findings in the pull request
-        if: github.event_name == 'pull_request'
-        uses: sett-and-hive/sarif-to-comment-action@v2.0.1
+      - name: Post Trivy results as a comment
+        uses: actions/github-script@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          branch: ${{ github.head_ref }}
-          pr-number: ${{ github.event.number }}
-          sarif-file: trivy-results.sarif
-          title: Scan security issues
-          dry-run: false
+          script: |
+            const results = ${{ steps.trivy-scan.outputs.stdout }}
+            const prNumber = context.payload.pull_request.number
+            const octokit = github.getOctokit(token)
+            octokit.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `Trivy scan results:\n\`\`\`\n${results}\n\`\`\``
+            })
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
