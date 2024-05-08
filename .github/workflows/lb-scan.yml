@@ -9,7 +9,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Run Trivy vulnerability scanner in repo mode
         id: trivy-scan
         uses: aquasecurity/trivy-action@master
@@ -19,18 +18,13 @@ jobs:
           format: "table"
           severity: "CRITICAL,HIGH"
 
-      - name: Post Trivy results as a comment
-        uses: actions/github-script@v5
+      - uses: actions/github-script@v5
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const results = ${{ steps.trivy-scan.outputs.stdout }}
-            const prNumber = context.payload.pull_request.number
-            const octokit = github.getOctokit(token)
-            octokit.issues.createComment({
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: prNumber,
-              body: `Trivy scan results:\n\`\`\`\n${results}\n\`\`\``
+              body: `Trivy scan results:\n\`\`\`\n${{ steps.trivy-scan.outputs.stdout }}\n\`\`\``
             })
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
