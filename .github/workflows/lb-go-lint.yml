@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   workflow_call:
 env:
-  GOPRIVATE: "github.com/mconf"
+  GOPRIVATE: github.com/mconf/*
 jobs:
   lint:
     name: Run lint
