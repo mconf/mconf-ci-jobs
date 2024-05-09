@@ -4,15 +4,11 @@ on:
   workflow_call:
 env:
   GOPRIVATE: "github.com/mconf"
-  GO111MODULE: "on"
 jobs:
   lint:
     name: Run lint
     runs-on: [self-hosted, ubuntu-20.04]
     steps:
-      - name: Setup Git
-        run: git config --global url."https://${{ secrets.GITHUB_TOKEN }}:@github.com/".insteadOf "https://github.com"
-
       - name: Check out Source Repository
         uses: actions/checkout@v4
 
