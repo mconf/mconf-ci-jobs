@@ -5,7 +5,7 @@ on:
       SRC_PATH:
         type: string
         required: true
-      python_version:
+      python-version:
         type: string
         required: true
 
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python Environment
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ inputs.python_version }}
+          python-version: ${{ inputs.python-version }}
       - name: Install Linux Libraries
         run: sudo apt-get update && sudo apt-get install -y libpq-dev
       - name: Install Dependencies
