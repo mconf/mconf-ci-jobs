@@ -2,6 +2,11 @@ name: Run build
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      go-version:
+        type: string
+        required: true
+
 env:
   GOPRIVATE: "github.com/mconf"
 jobs:
@@ -15,7 +20,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.16.6
+          go-version: ${{ inputs.go-version }}
 
       - name: Configure Git to Access Private Modules
         uses: webfactory/ssh-agent@v0.5.4

@@ -2,6 +2,10 @@ name: Run tests
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      go-version:
+        type: string
+        required: true
 env:
   GOPRIVATE: "github.com/mconf"
 jobs:
@@ -20,7 +24,7 @@ jobs:
         if: contains(steps.changed-go-files.outputs.modified_files, '.go')
         uses: actions/setup-go@v5
         with:
-          go-version: 1.16.6
+          go-version: ${{ inputs.go-version }}
 
       - name: Configure Git to Access Private Modules
         if: contains(steps.changed-go-files.outputs.modified_files, '.go')
