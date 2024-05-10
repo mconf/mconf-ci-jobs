@@ -8,6 +8,10 @@ on:
       TESTS_PATH:
         type: string
         required: true
+      python-version:
+        type: string
+        required: true
+
 jobs:
   test-and-check-coverage:
     runs-on: [self-hosted, ubuntu-20.04]
@@ -22,12 +26,12 @@ jobs:
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: ${{ inputs.python-version }}
       - name: Setup PDM
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: "3.10"
+          python-version: ${{ inputs.python-version }}
           cache: true
           cache-dependency-path: ./pdm.lock
       - name: Install Dependencies
