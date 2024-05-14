@@ -29,7 +29,7 @@ jobs:
           python-version: ${{ inputs.python-version }}
       - name: Setup PDM
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ inputs.python-version }}
           cache: true
