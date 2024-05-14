@@ -36,4 +36,4 @@ jobs:
           src: "./${{ inputs.SRC_PATH }}"
           version: "22.10.0"
       - name: Run Isort
-        uses: isort/isort-action@v1.0.0
+        uses: isort/isort-action@v1.1.0
