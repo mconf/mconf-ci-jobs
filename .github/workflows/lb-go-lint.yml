@@ -26,6 +26,6 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Lint with GolangCI
-        uses: golangci/golangci-lint-action@v5.1.0
+        uses: golangci/golangci-lint-action@v6.0.1
         with:
-          version: v1.44.2
+          version: v1.58
