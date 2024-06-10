@@ -19,41 +19,46 @@ jobs:
       - name: Get Modified Go Files
         id: changed-go-files
         uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/*.go
+            go.mod
+            go.sum
 
       - name: Set up Go
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go-version }}
 
       - name: Configure Git to Access Private Modules
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install Tparse Package
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go install github.com/mfridman/tparse@v0.11.0
 
       - name: Install Gocov Package
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go install github.com/axw/gocov/gocov@v1.1.0
 
       - name: Install Gocov-XML Package
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go install github.com/AlekSi/gocov-xml@v1.1.0
 
       - name: Test
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go test -cover -v ./... -json | tparse -pass
 
       - name: Generate Coverage File
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         run: gocov test ./... | gocov-xml > coverage.cobertura.xml
 
       - name: Code Coverage Summary Report
-        if: contains(steps.changed-go-files.outputs.modified_files, '.go')
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: coverage.cobertura.xml
@@ -67,7 +72,7 @@ jobs:
 
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
-        if: ${{ contains(steps.changed-go-files.outputs.modified_files, '.go') && github.event_name == 'pull_request' }}
+        if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && github.event_name == 'pull_request' }}
         with:
           recreate: true
           path: code-coverage-results.md
