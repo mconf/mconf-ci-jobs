@@ -6,6 +6,9 @@ on:
       go-version:
         type: string
         required: true
+permissions:
+  pull-requests: write
+  contents: read
 env:
   GOPRIVATE: "github.com/mconf"
 jobs:
