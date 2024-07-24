@@ -11,6 +11,9 @@ on:
       python-version:
         type: string
         required: true
+      env-file:
+        type: string
+        required: true
 
 jobs:
   test-and-check-coverage:
@@ -41,7 +44,7 @@ jobs:
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
         uses: c-py/action-dotenv-to-setenv@v2
         with:
-          env-file: .env
+          env-file: ${{ inputs.env-file }}
       - name: Run Tests
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
         run: pdm run coverage run --source=${{ inputs.SRC_PATH }} --omit=${{ inputs.SRC_PATH }}/app.py -m unittest discover -s ${{ inputs.TESTS_PATH }}
