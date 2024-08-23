@@ -24,7 +24,7 @@ jobs:
         with:
           registry: docker.io
           username: mconf
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
 
       - name: Calculate tag
         id: tag
@@ -68,5 +68,5 @@ jobs:
 
       - name: Upload Trivy results to Trivy Explorer
         run: |
-          curl -H "Content-Type: application/json" -H "Authorization: ${{secrets.EXPLORER_AUTH_TOKEN}}" --data "${{ env.UUID }}.json" ${{secrets.EXPLORER_URL}}
+          curl -H "Content-Type: application/json" -H "Authorization: ${{secrets.TRIVY_EXPLORER_AUTH_TOKEN}}" --data "${{ env.UUID }}.json" ${{secrets.TRIVY_EXPLORER_URL}}
           echo
