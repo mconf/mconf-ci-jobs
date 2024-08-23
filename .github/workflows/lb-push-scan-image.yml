@@ -22,8 +22,8 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          registry: ${{ inputs.registry_uri }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
+          registry: docker.io
+          username: mconf
           password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Calculate tag
