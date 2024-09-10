@@ -40,10 +40,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Install Tparse Package
-        if: steps.changed-go-files.outputs.any_changed == 'true'
-        run: go install github.com/mfridman/tparse@v0.11.0
-
       - name: Install Gocov Package
         if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go install github.com/axw/gocov/gocov@v1.1.0
@@ -52,11 +48,7 @@ jobs:
         if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go install github.com/AlekSi/gocov-xml@v1.1.0
 
-      - name: Test
-        if: steps.changed-go-files.outputs.any_changed == 'true'
-        run: go test -cover -v ./... -json | tparse -pass
-
-      - name: Generate Coverage File
+      - name: Test and Generate Coverage File
         if: steps.changed-go-files.outputs.any_changed == 'true'
         run: gocov test ./... | gocov-xml > coverage.cobertura.xml
 
