@@ -50,7 +50,9 @@ jobs:
 
       - name: Test and Generate Coverage File
         if: steps.changed-go-files.outputs.any_changed == 'true'
-        run: gocov test ./... | gocov-xml > coverage.cobertura.xml
+        run: | # Get coverage only for packages that have tests.
+          packages=$(find . -name '*_test.go' -exec dirname {} + | sort -u | tr '\n' ',' | sed 's/,$//')
+          gocov test ./... -coverpkg $packages | gocov-xml > coverage.cobertura.xml
 
       - name: Code Coverage Summary Report
         if: steps.changed-go-files.outputs.any_changed == 'true'
