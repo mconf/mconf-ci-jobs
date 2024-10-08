@@ -28,7 +28,11 @@ jobs:
       - name: Calculate tag
         id: tag
         run: |
-          TAG="${{github.ref_name}}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            TAG="${{ github.head_ref }}"
+          else
+            TAG="${{github.ref_name}}"
+          fi
           echo "IMAGE=${{github.repository}}:$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Docker meta
