@@ -3,6 +3,10 @@ name: Push new tag
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      should_push:
+        type: boolean
+        required: true
 
 jobs:
   build-push-scan:
@@ -18,14 +22,14 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          username: mconf
+          username: daileon
           password: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
 
       - name: Calculate tag
         id: tag
         run: |
           TAG="${{github.ref_name}}"
-          echo "IMAGE=${{ inputs.registry_uri }}/${{github.repository}}:$TAG" >> $GITHUB_OUTPUT
+          echo "IMAGE=${{github.repository}}:$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Docker meta
         id: meta
@@ -36,7 +40,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          push: true
+          push: ${{ inputs.should_push }}
           load: true
           tags: ${{ steps.tag.outputs.IMAGE }}
           context: .
@@ -50,7 +54,7 @@ jobs:
 
       - name: Generate UUID4
         id: generate-uuid
-        run: echo "UUID=$(cat /proc/sys/kernel/random/uuid)" >> $GITHUB_ENV
+        run: echo "UUID=$(cat /proc/sys/kernel/random/uuid)" >> "$GITHUB_ENV"
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
