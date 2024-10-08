@@ -29,7 +29,8 @@ jobs:
         id: tag
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            TAG="${{ github.head_ref }}"
+          # Replace / with - to avoid conflict
+            TAG=$(echo "${{ github.head_ref }}" | sed 's/\//-/g')
           else
             TAG="${{github.ref_name}}"
           fi
