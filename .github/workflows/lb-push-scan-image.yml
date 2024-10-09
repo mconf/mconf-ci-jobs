@@ -41,6 +41,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.tag.outputs.IMAGE }}
+      
+      - name: Configure Git to Access Private Modules
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
