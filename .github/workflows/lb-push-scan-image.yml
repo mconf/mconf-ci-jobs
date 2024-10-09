@@ -50,6 +50,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
+          ssh: |
+            default=${{ env.SSH_AUTH_SOCK }}
           push: ${{ inputs.should_push }}
           load: true
           tags: ${{ steps.tag.outputs.IMAGE }}
