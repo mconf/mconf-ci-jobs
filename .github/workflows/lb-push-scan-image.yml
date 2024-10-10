@@ -37,7 +37,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.tag.outputs.IMAGE }}
-      
+
       - name: Configure Git to Access Private Modules
         if: ${{ env.ssh-private-key != '' }}
         uses: webfactory/ssh-agent@v0.5.4
@@ -47,10 +47,23 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Build and push image
+        if: env.SSH_AUTH_SOCK != ''
         uses: docker/build-push-action@v6
         with:
           ssh: |
             default=${{ env.SSH_AUTH_SOCK }}
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          load: true
+          tags: ${{ steps.tag.outputs.IMAGE }}
+          context: .
+          platforms: linux/amd64
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+
+      - name: Build and push image without SSH
+        if: env.SSH_AUTH_SOCK == ''
+        uses: docker/build-push-action@v6
+        with:
           push: ${{ startsWith(github.ref, 'refs/tags/') }}
           load: true
           tags: ${{ steps.tag.outputs.IMAGE }}
