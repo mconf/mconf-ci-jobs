@@ -72,10 +72,10 @@ jobs:
           image-ref: ${{ steps.tag.outputs.IMAGE }}
           ignore-unfixed: true
           format: "json"
-          output: "${{ env.UUID }}.json"
+          output: "/tmp/${{ env.UUID }}.json"
           severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy results to Trivy Explorer
         run: |
-          curl -H "Content-Type: application/json" -H "Authorization: ${{secrets.TRIVY_EXPLORER_AUTH_TOKEN}}" --data "${{ env.UUID }}.json" ${{secrets.TRIVY_EXPLORER_URL}}
+          curl -H "Content-Type: application/json" -H "Authorization: ${{secrets.TRIVY_EXPLORER_AUTH_TOKEN}}" --data "@/tmp/${{ env.UUID }}.json" ${{secrets.TRIVY_EXPLORER_URL}}
           echo
