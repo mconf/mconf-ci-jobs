@@ -52,7 +52,7 @@ jobs:
         with:
           ssh: |
             default=${{ env.SSH_AUTH_SOCK }}
-          push: ${{ inputs.should_push }}
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
           load: true
           tags: ${{ steps.tag.outputs.IMAGE }}
           context: .
