@@ -21,8 +21,11 @@ jobs:
           go-version: ${{ inputs.go-version }}
 
       - name: Configure Git to Access Private Modules
+        if: ${{ env.ssh-private-key != '' }}
         uses: webfactory/ssh-agent@v0.5.4
         with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        env:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Lint with GolangCI

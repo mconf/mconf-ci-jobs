@@ -35,9 +35,11 @@ jobs:
           go-version: ${{ inputs.go-version }}
 
       - name: Configure Git to Access Private Modules
-        if: steps.changed-go-files.outputs.any_changed == 'true'
+        if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && env.ssh-private-key != '' }}
         uses: webfactory/ssh-agent@v0.5.4
         with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        env:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install Gocov Package
