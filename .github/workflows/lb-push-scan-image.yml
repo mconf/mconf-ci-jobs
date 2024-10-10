@@ -3,10 +3,6 @@ name: Push new tag
 on:
   workflow_dispatch:
   workflow_call:
-    inputs:
-      should_push:
-        type: boolean
-        required: true
 
 jobs:
   build-push-scan:
