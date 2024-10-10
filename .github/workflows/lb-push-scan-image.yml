@@ -57,8 +57,6 @@ jobs:
           tags: ${{ steps.tag.outputs.IMAGE }}
           context: .
           platforms: linux/amd64
-          cache-from: type=registry,ref=${{ steps.tag.outputs.IMAGE }}
-          cache-to: type=registry,ref=${{ steps.tag.outputs.IMAGE }},image-manifest=true,oci-mediatypes=true,mode=max
           labels: |
             ${{ steps.meta.outputs.labels }}
 
