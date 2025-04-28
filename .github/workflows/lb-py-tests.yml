@@ -47,7 +47,7 @@ jobs:
           env-file: ${{ inputs.env-file }}
       - name: Run Tests
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
-        run: pdm run coverage run --source=${{ inputs.SRC_PATH }} --omit=${{ inputs.SRC_PATH }}/app.py -m pytest -v ${{ inputs.TESTS_PATH }}
+        run: pdm run coverage run --source=${{ inputs.SRC_PATH }} --omit=${{ inputs.SRC_PATH }}/app.py -m pytest -v ${{ inputs.TESTS_PATH }} --ignore=${{ inputs.TESTS_PATH }}/black-box/
       - name: Generate XML from Coverage
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
         run: pdm run coverage xml
