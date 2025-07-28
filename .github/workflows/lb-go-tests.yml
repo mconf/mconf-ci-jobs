@@ -55,6 +55,8 @@ jobs:
         run: | # Get coverage only for packages that have tests.
           packages=$(find . -name '*_test.go' -exec dirname {} + | sort -u | tr '\n' ',' | sed 's/,$//')
           gocov test ./... -coverpkg $packages | gocov-xml > coverage.cobertura.xml
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
 
       - name: Code Coverage Summary Report
         if: steps.changed-go-files.outputs.any_changed == 'true'
