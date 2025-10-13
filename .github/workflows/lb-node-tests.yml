@@ -11,7 +11,7 @@ jobs:
 
       - name: Get Modified JavaScript Files
         id: changed-javascript-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v47
 
       - name: Setup Node.js
         if: contains(steps.changed-javascript-files.outputs.modified_files, '.js')
