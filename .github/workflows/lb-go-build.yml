@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go-version }}
+          cache: true
 
       - name: Configure Git to Access Private Modules
         if: ${{ env.ssh-private-key != '' }}

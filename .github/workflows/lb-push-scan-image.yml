@@ -57,6 +57,8 @@ jobs:
           tags: ${{ steps.tag.outputs.IMAGE }}
           context: .
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           labels: |
             ${{ steps.meta.outputs.labels }}
 
@@ -69,6 +71,8 @@ jobs:
           tags: ${{ steps.tag.outputs.IMAGE }}
           context: .
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           labels: |
             ${{ steps.meta.outputs.labels }}
 

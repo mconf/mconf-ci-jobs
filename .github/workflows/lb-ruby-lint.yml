@@ -15,7 +15,7 @@ jobs:
     - name: Setup Ruby Environment
       uses: ruby/setup-ruby@v1
       with:
-        bundler-cache: .true
+        bundler-cache: true
     - name: Install Dependencies
       run: bundle install
     - name: Lint with RuboCop
