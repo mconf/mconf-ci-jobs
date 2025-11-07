@@ -90,6 +90,15 @@ jobs:
           severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy results to Trivy Explorer
+        id: upload_trivy
         run: |
-          curl -H "Content-Type: application/json" -H "Authorization: ${{secrets.TRIVY_EXPLORER_AUTH_TOKEN}}" --data "@/tmp/${{ env.UUID }}.json" ${{secrets.TRIVY_EXPLORER_URL}}
-          echo
+          RESPONSE=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${{secrets.TRIVY_EXPLORER_AUTH_TOKEN}}" --data "@/tmp/${{ env.UUID }}.json" ${{secrets.TRIVY_EXPLORER_URL}})
+          echo "Response: $RESPONSE"
+          REPORT_URL=$(echo "$RESPONSE" | jq -r '.url')
+          echo "report_url=$REPORT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Add link to job summary
+        run: |
+          echo "Trivy Scan Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "A new security scan report has been generated. You can view it here:" >> "$GITHUB_STEP_SUMMARY"
+          echo "[View Detailed Report](${{ steps.upload_trivy.outputs.report_url }})" >> "$GITHUB_STEP_SUMMARY"
