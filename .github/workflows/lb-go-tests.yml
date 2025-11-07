@@ -33,6 +33,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go-version }}
+          cache: true
 
       - name: Configure Git to Access Private Modules
         if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && env.ssh-private-key != '' }}

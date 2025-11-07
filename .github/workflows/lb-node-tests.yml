@@ -18,6 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 12
+          cache: 'npm'
 
       - name: Clean Install Project
         if: contains(steps.changed-javascript-files.outputs.modified_files, '.js')
