@@ -42,7 +42,7 @@ jobs:
         run: pdm install
       - name: Load .env File
         if: contains(steps.changed-python-files.outputs.modified_files, '.py')
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v5
         with:
           env-file: ${{ inputs.env-file }}
       - name: Run Tests
