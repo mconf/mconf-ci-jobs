@@ -21,7 +21,7 @@ jobs:
 
       - name: Get Modified Go Files
         id: changed-go-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v47
         with:
           files: |
             **/*.go
