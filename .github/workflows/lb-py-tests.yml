@@ -21,7 +21,7 @@ jobs:
     name: Test and Check Coverage
     steps:
       - name: Check out Source Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Get Modified Python Files
         id: changed-python-files
         uses: tj-actions/changed-files@v47

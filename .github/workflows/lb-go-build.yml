@@ -15,7 +15,7 @@ jobs:
     runs-on: [self-hosted, ubuntu-20.04]
     steps:
       - name: Check out Source Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Go
         uses: actions/setup-go@v6
