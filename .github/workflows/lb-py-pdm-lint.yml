@@ -15,7 +15,7 @@ jobs:
     name: Lint and Check Formatting
     steps:
       - name: Check out Source Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Python Environment
         uses: actions/setup-python@v6
         with:
