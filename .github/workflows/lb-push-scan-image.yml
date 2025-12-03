@@ -7,7 +7,7 @@ on:
 jobs:
   build-push-scan:
     name: Build, Push and Scan Docker
-    runs-on: [self-hosted, ubuntu-20.04]
+    runs-on: [self-hosted, ubuntu-22.04]
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v5
