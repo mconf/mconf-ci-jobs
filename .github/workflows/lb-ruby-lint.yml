@@ -19,4 +19,4 @@ jobs:
     - name: Install Dependencies
       run: bundle install
     - name: Lint with RuboCop
-      run: rubocop -l
+      run: bundle exec rubocop -l
