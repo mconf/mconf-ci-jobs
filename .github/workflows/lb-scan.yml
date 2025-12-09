@@ -5,7 +5,7 @@ on:
 jobs:
   trivy:
     name: Run trivy check
-    runs-on: [self-hosted, ubuntu-20.04]
+    runs-on: [self-hosted, ubuntu-22.04]
 
     steps:
       - uses: actions/checkout@v5

@@ -11,7 +11,7 @@ on:
 
 jobs:
   format-and-lint:
-    runs-on: [self-hosted, ubuntu-20.04]
+    runs-on: [self-hosted, ubuntu-22.04]
     name: Lint and Check Formatting
     steps:
       - name: Check out Source Repository

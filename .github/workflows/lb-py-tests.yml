@@ -17,7 +17,7 @@ on:
 
 jobs:
   test-and-check-coverage:
-    runs-on: [self-hosted, ubuntu-20.04]
+    runs-on: [self-hosted, ubuntu-22.04]
     name: Test and Check Coverage
     steps:
       - name: Check out Source Repository
