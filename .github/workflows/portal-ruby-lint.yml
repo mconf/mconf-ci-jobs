@@ -1,0 +1,29 @@
+name: Run Ruby lint
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: [self-hosted, ubuntu-22.04]
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+            build-essential git libmariadb-dev libsqlite3-dev libyaml-dev pkg-config
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      - name: Lint code for syntax errors and bugs
+        # -l runs a lint check only, -f github formats the output for GitHub
+        run: bundle exec rubocop -l -f github --config .rubocop.yml
