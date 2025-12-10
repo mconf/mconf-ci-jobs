@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-scan
   cancel-in-progress: true
 
 jobs:
