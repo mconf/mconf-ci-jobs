@@ -38,6 +38,9 @@ jobs:
         with:
           images: ${{ steps.tag.outputs.IMAGE }}
 
+      - name: Install ssh-agent
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
       - name: Configure Git to Access Private Modules
         if: ${{ env.ssh-private-key != '' }}
         uses: webfactory/ssh-agent@v0.5.4
