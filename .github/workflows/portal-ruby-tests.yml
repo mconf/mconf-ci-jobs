@@ -1,0 +1,79 @@
+name: Run Ruby tests
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: [self-hosted, ubuntu-22.04]
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: mconf_web_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping -h localhost" --health-interval=10s --health-timeout=5s --health-retries=3
+      redis:
+        image: redis:3.2
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Install Chromium
+        run: |
+          sudo apt-get update
+          if apt-cache show chromium-browser >/dev/null 2>&1; then
+            sudo apt-get install --no-install-recommends -y chromium-browser
+          elif apt-cache show chromium >/dev/null 2>&1; then
+            sudo apt-get install --no-install-recommends -y chromium
+          else
+            echo "Chromium not available via apt on this runner; skipping install"
+          fi
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+            build-essential git libmariadb-dev libsqlite3-dev libyaml-dev pkg-config nodejs tzdata \
+            imagemagick libmagickcore-dev libmagickwand-dev
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: mysql2://root@127.0.0.1:3306/mconf_web_test
+          MCONF_REDIS_HOST: 127.0.0.1
+          MCONF_LOG_LEVEL: fatal
+          MCONF_EMAIL_TRACK_CLICKED: false
+          MCONF_EMAIL_TRACK_OPENED: true
+          MCONF_OMNIAUTH_GOOGLE_KEY: ${{ secrets.GOOGLE_OAUTH_KEY }}
+          MCONF_OMNIAUTH_FACEBOOK_KEY: ${{ secrets.FACEBOOK_OAUTH_KEY }}
+          MCONF_OMNIAUTH_GOOGLE_SECRET: ${{ secrets.GOOGLE_OAUTH_SECRET }}
+          MCONF_OMNIAUTH_FACEBOOK_SECRET: ${{ secrets.FACEBOOK_OAUTH_SECRET }}
+          MCONF_CAN_CONTACT_PORTAL: localhost,http://localhost:4000
+          MCONF_CAN_RECORD_DEFAULT: false
+          MCONF_COOKIES_SECURE: false
+          MCONF_COOKIES_SAME_SITE: lax
+          MCONF_RD_TRAFFIC_SOURCE: Elos
+          MCONF_RD_TRAFFIC_MEDIUM: portal
+          MCONF_RD_TRAFFIC_CAMPAIGN: none
+          MCONF_HIDE_PENDING_TESTS: 1
+          MCONF_DEVISE_PEPPER: ${{ secrets.DEVISE_PEPPER }}
+          MCONF_DEVISE_SECRET_KEY: ${{ secrets.DEVISE_SECRET_KEY }}
+          DEVISE_SECRET_KEY: ${{ secrets.DEVISE_JWT_SECRET_KEY }}
+        run: bin/rails db:prepare spec
