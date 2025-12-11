@@ -37,11 +37,11 @@ jobs:
           cache: true
 
       - name: Install SSH Agent
-        if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && secrets.SSH_PRIVATE_KEY != '' }}
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         run: sudo apt-get update && sudo apt-get install -y openssh-client
 
       - name: Configure Git to Access Private Modules
-        if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && secrets.SSH_PRIVATE_KEY != '' }}
+        if: steps.changed-go-files.outputs.any_changed == 'true'
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}

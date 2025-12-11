@@ -30,11 +30,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential
 
       - name: Install SSH Agent
-        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
         run: sudo apt-get install -y openssh-client
 
       - name: Configure Git to Access Private Modules
-        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
