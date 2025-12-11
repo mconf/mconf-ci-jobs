@@ -26,5 +26,8 @@ jobs:
       - name: Clean Install Project
         run: npm ci
 
+      - name: Install ESLint
+        run: npm install -g eslint
+
       - name: Run ESLint
         run: npx eslint . --ext .js,.jsx,.ts,.tsx
