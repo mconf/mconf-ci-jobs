@@ -10,11 +10,12 @@ permissions:
   pull-requests: write
   contents: read
 env:
-  GOPRIVATE: "github.com/mconf"
+  GOPRIVATE: "github.com/mconf/*"
 jobs:
   tests:
     name: Run tests
     runs-on: [self-hosted, ubuntu-22.04]
+    timeout-minutes: 15
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
@@ -35,15 +36,14 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: true
 
-      - name: Install ssh-agent
+      - name: Install SSH Agent
+        if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && secrets.SSH_PRIVATE_KEY != '' }}
         run: sudo apt-get update && sudo apt-get install -y openssh-client
 
       - name: Configure Git to Access Private Modules
-        if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && env.ssh-private-key != '' }}
+        if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && secrets.SSH_PRIVATE_KEY != '' }}
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        env:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install Gocov Package
@@ -62,7 +62,7 @@ jobs:
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
 
-      - name: Code Coverage Summary Report
+      - name: Generate Code Coverage Summary Report
         if: steps.changed-go-files.outputs.any_changed == 'true'
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:

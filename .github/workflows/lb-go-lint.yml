@@ -5,12 +5,18 @@ on:
       go-version:
         type: string
         required: true
+      golangci-lint-version:
+        type: string
+        required: true
 env:
   GOPRIVATE: github.com/mconf/*
+permissions:
+  contents: read
 jobs:
   lint:
     name: Run lint
     runs-on: [self-hosted, ubuntu-22.04]
+    timeout-minutes: 15
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
@@ -21,19 +27,18 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: true
 
-      - name: Install ssh-agent
+      - name: Install SSH Agent
+        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
         run: sudo apt-get update && sudo apt-get install -y openssh-client
 
       - name: Configure Git to Access Private Modules
-        if: ${{ env.ssh-private-key != '' }}
+        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        env:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Lint with GolangCI
         uses: golangci/golangci-lint-action@v9.2.0
         with:
-          version: v2.5.0
+          version: ${{ inputs.golangci-lint-version }}
           args: --timeout=10m
