@@ -2,10 +2,14 @@ name: Run trivy on filesystem
 on:
   workflow_dispatch:
   workflow_call:
+permissions:
+  contents: read
+  pull-requests: write
 jobs:
   trivy:
     name: Run trivy check
     runs-on: [self-hosted, ubuntu-22.04]
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v6
