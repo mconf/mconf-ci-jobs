@@ -14,45 +14,54 @@ on:
       env-file:
         type: string
         required: true
-
+permissions:
+  pull-requests: write
+  contents: read
 jobs:
   test-and-check-coverage:
     runs-on: [self-hosted, ubuntu-22.04]
     name: Test and Check Coverage
+    timeout-minutes: 15
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
       - name: Get Modified Python Files
         id: changed-python-files
         uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            **/*.py
+            requirements.txt
+            pdm.lock
+            pyproject.toml
       - name: Set up Python Environment
-        if: contains(steps.changed-python-files.outputs.modified_files, '.py')
+        if: steps.changed-python-files.outputs.any_changed == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: ${{ inputs.python-version }}
       - name: Setup PDM
-        if: contains(steps.changed-python-files.outputs.modified_files, '.py')
+        if: steps.changed-python-files.outputs.any_changed == 'true'
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ inputs.python-version }}
           cache: true
           cache-dependency-path: ./pdm.lock
       - name: Install Dependencies
-        if: contains(steps.changed-python-files.outputs.modified_files, '.py')
+        if: steps.changed-python-files.outputs.any_changed == 'true'
         run: pdm install
       - name: Load .env File
-        if: contains(steps.changed-python-files.outputs.modified_files, '.py')
+        if: steps.changed-python-files.outputs.any_changed == 'true'
         uses: c-py/action-dotenv-to-setenv@v5
         with:
           env-file: ${{ inputs.env-file }}
       - name: Run Tests
-        if: contains(steps.changed-python-files.outputs.modified_files, '.py')
+        if: steps.changed-python-files.outputs.any_changed == 'true'
         run: pdm run coverage run --source=${{ inputs.SRC_PATH }} --omit=${{ inputs.SRC_PATH }}/app.py -m pytest -v ${{ inputs.TESTS_PATH }} --ignore=${{ inputs.TESTS_PATH }}/black-box/
       - name: Generate XML from Coverage
-        if: contains(steps.changed-python-files.outputs.modified_files, '.py')
+        if: steps.changed-python-files.outputs.any_changed == 'true'
         run: pdm run coverage xml
       - name: Run Python Cov
-        if: ${{ contains(steps.changed-python-files.outputs.modified_files, '.py') && github.event_name == 'pull_request' }}
+        if: ${{ steps.changed-python-files.outputs.any_changed == 'true' && github.event_name == 'pull_request' }}
         uses: orgoro/coverage@v3.2
         with:
           coverageFile: coverage.xml

@@ -8,11 +8,16 @@ on:
       python-version:
         type: string
         required: true
-
+      black-version:
+        type: string
+        required: true
+permissions:
+  contents: read
 jobs:
   format-and-lint:
     runs-on: [self-hosted, ubuntu-22.04]
     name: Lint and Check Formatting
+    timeout-minutes: 15
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
@@ -29,12 +34,12 @@ jobs:
         uses: py-actions/flake8@v2
         with:
           path: "./${{ inputs.SRC_PATH }}"
-          ignore: "E501,E721,W503"
+          ignore: "E501,E721,W503,E203"
       - name: Check with Black
         uses: psf/black@stable
         with:
           options: "--check --verbose"
           src: "./${{ inputs.SRC_PATH }}"
-          version: "22.10.0"
+          version: ${{ inputs.black-version }}
       - name: Run Isort
         uses: isort/isort-action@v1.1.1

@@ -8,11 +8,16 @@ on:
       python-version:
         type: string
         required: true
-
+      black-version:
+        type: string
+        required: true
+permissions:
+  contents: read
 jobs:
   format-and-lint:
     runs-on: [self-hosted, ubuntu-22.04]
     name: Lint and Check Formatting
+    timeout-minutes: 15
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
@@ -38,6 +43,6 @@ jobs:
         with:
           options: "--check --verbose"
           src: "./${{ inputs.SRC_PATH }}"
-          version: "25.1.0"
+          version: ${{ inputs.black-version }}
       - name: Run Isort
         uses: isort/isort-action@v1.1.1
