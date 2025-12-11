@@ -2,28 +2,44 @@ name: Run tests
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      node-version:
+        type: string
+        required: true
+permissions:
+  contents: read
 jobs:
   Test:
+    name: Run tests
     runs-on: [self-hosted, ubuntu-22.04]
+    timeout-minutes: 15
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
 
       - name: Get Modified JavaScript Files
-        id: changed-javascript-files
+        id: changed-js-files
         uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            **/*.js
+            **/*.jsx
+            **/*.ts
+            **/*.tsx
+            package.json
+            package-lock.json
 
       - name: Setup Node.js
-        if: contains(steps.changed-javascript-files.outputs.modified_files, '.js')
+        if: steps.changed-js-files.outputs.any_changed == 'true'
         uses: actions/setup-node@v6
         with:
-          node-version: 12
+          node-version: ${{ inputs.node-version }}
           cache: 'npm'
 
       - name: Clean Install Project
-        if: contains(steps.changed-javascript-files.outputs.modified_files, '.js')
+        if: steps.changed-js-files.outputs.any_changed == 'true'
         run: npm ci
 
       - name: Test
-        if: contains(steps.changed-javascript-files.outputs.modified_files, '.js')
+        if: steps.changed-js-files.outputs.any_changed == 'true'
         run: npm test
