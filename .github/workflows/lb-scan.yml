@@ -8,7 +8,7 @@ jobs:
     runs-on: [self-hosted, ubuntu-22.04]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@master
         with:

@@ -13,7 +13,7 @@ jobs:
     runs-on: [self-hosted, ubuntu-22.04]
     steps:
       - name: Check out Source Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Go
         uses: actions/setup-go@v6
