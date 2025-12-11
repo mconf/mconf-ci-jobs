@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      - name: Run Trivy vulnerability scanner in repo mode
+      - name: Run Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
@@ -22,7 +22,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
 
-      - name: Post SARIF findings in the pull request
+      - name: Post Security Findings to Pull Request
         if: github.event_name == 'pull_request'
         uses: sett-and-hive/sarif-to-comment-action@v2.0.1
         with:

@@ -39,5 +39,5 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Build
+      - name: Build Project
         run: CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags '-linkmode=external' -o main .

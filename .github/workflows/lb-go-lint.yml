@@ -37,7 +37,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Lint with GolangCI
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9.2.0
         with:
           version: ${{ inputs.golangci-lint-version }}

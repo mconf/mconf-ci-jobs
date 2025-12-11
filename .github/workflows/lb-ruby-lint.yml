@@ -20,12 +20,12 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential patch ruby-dev zlib1g-dev liblzma-dev libgmp-dev libpq-dev libsqlite3-dev
-    - name: Setup Ruby Environment
+    - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ inputs.ruby-version }}
         bundler-cache: true
     - name: Install Dependencies
       run: bundle install
-    - name: Lint with RuboCop
+    - name: Run RuboCop Linter
       run: bundle exec rubocop -l

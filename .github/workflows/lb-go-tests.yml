@@ -46,11 +46,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Install Gocov Package
+      - name: Install Gocov
         if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go install github.com/axw/gocov/gocov@v1.1.0
 
-      - name: Install Gocov-XML Package
+      - name: Install Gocov-XML
         if: steps.changed-go-files.outputs.any_changed == 'true'
         run: go install github.com/AlekSi/gocov-xml@v1.1.0
 
