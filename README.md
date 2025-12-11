@@ -33,7 +33,7 @@ Runs golangci-lint on Go code.
 - `go-version` (required): Go version to use
 - `golangci-lint-version` (required): golangci-lint version
 
-**Usage:******
+**Usage:**
 ```yaml
 jobs:
   lint:
@@ -123,7 +123,7 @@ Runs Flake8, Black, and isort on Python code (pip-based projects).
 - `python-version` (required): Python version
 - `black-version` (required): Black version
 
-**Usage:******
+**Usage:**
 ```yaml
 jobs:
   lint:
@@ -142,7 +142,7 @@ Runs Flake8, Black, and isort on Python code (PDM-based projects).
 - `python-version` (required): Python version
 - `black-version` (required): Black version
 
-**Usage:******
+**Usage:**
 ```yaml
 jobs:
   lint:
@@ -243,7 +243,7 @@ jobs:
 All workflows include:
 - **Minimal permissions**: Only required permissions are granted
 - **Timeout protection**: All jobs have timeout limits (15-30 minutes)
-- **Private module support**: SSH agent configured when SSH_PRIVATE_KEY secret is provided
+- **Private module support**: SSH agent configured when `SSH_PRIVATE_KEY` secret is provided
 - **Dependency caching**: Faster builds with intelligent caching
 - **Vulnerability scanning**: Trivy integration for security checks
 
