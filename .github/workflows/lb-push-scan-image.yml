@@ -45,11 +45,6 @@ jobs:
       - name: Install SSH Agent
         run: sudo apt-get update && sudo apt-get install -y openssh-client
 
-      - name: Configure Git to Access Private Modules
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
