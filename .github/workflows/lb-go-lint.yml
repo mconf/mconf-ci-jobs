@@ -28,9 +28,15 @@ jobs:
           cache: true
 
       - name: Install SSH Agent
-        run: sudo apt-get update && sudo apt-get install -y openssh-client
+        if: ${{ env.ssh-private-key != '' }}
+        env:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: sudo apt-get install -y openssh-client
 
       - name: Configure Git to Access Private Modules
+        if: ${{ env.ssh-private-key != '' }}
+        env:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
