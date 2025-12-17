@@ -54,7 +54,9 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+            ${{ secrets.PRODUCER_SSH_PRIVATE_KEY }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
