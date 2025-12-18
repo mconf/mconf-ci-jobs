@@ -24,6 +24,8 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
-      - name: Lint code for syntax errors and bugs
+      - name: Lint Ruby code for syntax errors and bugs
         # -l runs a lint check only, -f github formats the output for GitHub
         run: bundle exec rubocop -l -f github --config .rubocop.yml
+      - name: Lint HAML files
+        run: bundle exec haml-lint -c .haml-lint.yml app/views
