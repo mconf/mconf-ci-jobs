@@ -1,0 +1,28 @@
+name: Run Ruby scan
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-scan
+  cancel-in-progress: true
+
+jobs:
+  scan_ruby:
+    runs-on: [self-hosted, ubuntu-22.04]
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+            build-essential git libmariadb-dev libsqlite3-dev libyaml-dev pkg-config tzdata
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      - name: Scan for common Rails security vulnerabilities using static analysis
+        run: bundle exec brakeman -q
