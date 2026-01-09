@@ -1,0 +1,422 @@
+name: Generate Changelog (AI)
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to generate changelog for (e.g., v1.2.3)'
+        required: true
+        type: string
+      previous_version:
+        description: 'Previous version to compare against (leave empty to auto-detect last tag)'
+        required: false
+        type: string
+      changelog_file:
+        description: 'Path to the changelog file'
+        required: false
+        type: string
+        default: 'CHANGELOG.md'
+      pr_branch_prefix:
+        description: 'Prefix for the PR branch name'
+        required: false
+        type: string
+        default: 'changelog'
+      claude_model:
+        description: 'Claude model to use (haiku, sonnet, opus)'
+        required: false
+        type: string
+        default: 'haiku'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-changelog-ai:
+    runs-on: [self-hosted, ubuntu-22.04]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+          # Install GitHub CLI
+          if ! command -v gh &> /dev/null; then
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt-get update
+            sudo apt-get install -y gh
+          fi
+
+          # Verify gh is installed
+          gh --version
+
+      - name: Determine versions
+        id: versions
+        run: |
+          current_version="${{ inputs.version }}"
+          echo "current_version=$current_version" >> $GITHUB_OUTPUT
+          echo "Current version: $current_version"
+
+          # Determine previous version
+          if [ -n "${{ inputs.previous_version }}" ]; then
+            prev_version="${{ inputs.previous_version }}"
+            echo "Using provided previous version: $prev_version"
+          else
+            # Auto-detect last stable tag (ignoring alpha/beta)
+            prev_version=$(git tag --sort=-creatordate | grep '^v[0-9]*\.[0-9]*\.[0-9]*$' | grep -vE 'alpha|beta' | head -n1)
+            if [ -z "$prev_version" ]; then
+              echo "No previous tag found. Using first commit."
+              prev_version=$(git rev-list --max-parents=0 HEAD)
+            else
+              echo "Auto-detected previous version: $prev_version"
+            fi
+          fi
+
+          echo "prev_version=$prev_version" >> $GITHUB_OUTPUT
+          echo "Previous version: $prev_version"
+
+      - name: Gather PR information between versions
+        id: prs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set +e
+          COMMIT_RANGE="${{ steps.versions.outputs.prev_version }}..HEAD"
+          echo "Commit range: $COMMIT_RANGE"
+
+          # Use process substitution to avoid subshell issue
+          pr_body_parts=()
+          while IFS=: read -r merge_hash merge_subject; do
+            pr_number=$(echo "$merge_subject" | sed -n 's/.*Merge pull request #\([0-9]\+\).*/\1/p')
+            if [ -n "$pr_number" ]; then
+              echo "Attempting to fetch PR #$pr_number"
+              pr_data=$(gh pr view "$pr_number" --repo "$REPO" --json title,body,url 2>&1)
+              gh_exit_code=$?
+
+              if [ $gh_exit_code -eq 0 ] && [ -n "$pr_data" ] && [ "$pr_data" != "null" ]; then
+                title=$(echo "$pr_data" | jq -r .title)
+                description=$(echo "$pr_data" | jq -r '.body // "No description provided"')
+                pr_url=$(echo "$pr_data" | jq -r '.url // ""')
+
+                # Extract Notion card ID from title (format: [PRT-2515])
+                notion_card_id=$(echo "$title" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
+                notion_url=""
+
+                # If we found a notion card ID, try to get the Notion URL from notion-workspace bot comment
+                if [ -n "$notion_card_id" ]; then
+                  echo "Found Notion card ID: $notion_card_id"
+                  # Get PR comments from notion-workspace bot specifically
+                  notion_bot_comment=$(gh pr view "$pr_number" --repo "$REPO" --json comments --jq '.comments[] | select(.author.login == "notion-workspace") | .body' 2>/dev/null || true)
+                  if [ -n "$notion_bot_comment" ]; then
+                    # Extract Notion URL from the bot comment
+                    notion_url=$(echo "$notion_bot_comment" | grep -o 'https://[^[:space:]]*notion\.so[^[:space:]]*' | head -n1 || echo "")
+                    if [ -n "$notion_url" ]; then
+                      echo "Found Notion URL from bot: $notion_url"
+                    else
+                      echo "notion-workspace bot comment found but no Notion URL extracted"
+                    fi
+                  else
+                    echo "No comment from notion-workspace bot found for card ID: $notion_card_id"
+                  fi
+                fi
+
+                # Clean up description: remove newlines, extra spaces, and replace with single spaces
+                description=$(echo "$description" | tr '\n' ' ' | tr -s ' ' | sed 's/^ *//;s/ *$//')
+
+                # Handle null or empty descriptions
+                if [ "$description" = "null" ] || [ -z "$description" ]; then
+                  description="No description provided"
+                fi
+
+                # Escape any commas and quotes in all fields
+                title=$(echo "$title" | sed 's/,/\\,/g' | sed 's/"/\\"/g')
+                description=$(echo "$description" | sed 's/,/\\,/g' | sed 's/"/\\"/g')
+                notion_card_id=$(echo "$notion_card_id" | sed 's/,/\\,/g' | sed 's/"/\\"/g')
+
+                pr_body_parts+=("pr_number: $pr_number, pr_title: $title, description: $description, url: $pr_url, notion_card_id: $notion_card_id, notion_url: $notion_url")
+                echo "Successfully processed PR #$pr_number: $title"
+              else
+                echo "Failed to fetch PR #$pr_number or received empty data. Error: $pr_data"
+                echo "Skipping PR #$pr_number (may not exist in this repository)"
+              fi
+            else
+              echo "No PR number found in merge subject: $merge_subject"
+            fi
+          done < <(git log --merges --reverse --pretty="format:%H:%s" "$COMMIT_RANGE" 2>/dev/null || true)
+
+          # Join all PR body parts
+          pr_data_string=$(IFS=', '; echo "${pr_body_parts[*]}")
+
+          echo "Total PRs processed: ${#pr_body_parts[@]}"
+          if [ ${#pr_body_parts[@]} -eq 0 ]; then
+            echo "No PRs found in commit range. Changelog will be generated from commits only."
+          fi
+          echo "prs=$pr_data_string" >> $GITHUB_OUTPUT
+          set -e
+
+      - name: Prepare data for Claude
+        id: prepare
+        run: |
+          # Get detailed commit information
+          echo "Extracting commit information..."
+          git log ${{ steps.versions.outputs.prev_version }}..HEAD \
+            --pretty=format:"- %h: %s%n  Author: %an%n  Date: %ad%n" \
+            --date=short > /tmp/commits.txt
+
+          # Read existing changelog to understand the style
+          echo "Reading existing changelog..."
+          head -100 ${{ inputs.changelog_file }} > /tmp/changelog_style.txt
+
+          # Count commits
+          commit_count=$(git rev-list --count ${{ steps.versions.outputs.prev_version }}..HEAD)
+          echo "Total commits: $commit_count"
+          echo "commit_count=$commit_count" >> $GITHUB_OUTPUT
+
+      - name: Create prompt file for Claude
+        id: prompt
+        run: |
+          # Create focused prompt asking for TEXT OUTPUT ONLY
+          cat > /tmp/changelog_prompt.md << PROMPT_EOF
+          # Generate Changelog Entry
+
+          Generate a changelog entry for version **${{ steps.versions.outputs.current_version }}**.
+
+          ## Existing Changelog
+
+          Here is a snippet of the current changelog file to match the style, language, and format:
+
+          \`\`\`markdown
+          $(cat /tmp/changelog_style.txt)
+          \`\`\`
+
+          ## Commits
+
+          Here are all commits between ${{ steps.versions.outputs.prev_version }} and HEAD:
+
+          \`\`\`
+          $(cat /tmp/commits.txt)
+          \`\`\`
+
+          PROMPT_EOF
+
+          # Add PR information if available
+          if [ -n "${{ steps.prs.outputs.prs }}" ]; then
+            cat >> /tmp/changelog_prompt.md << PR_EOF
+
+          ## Pull Request Information
+
+          $(echo "${{ steps.prs.outputs.prs }}" | tr ',' '\n')
+          PR_EOF
+          fi
+
+          # Add final instructions
+          cat >> /tmp/changelog_prompt.md << INSTRUCTIONS_EOF
+
+          ## Task
+
+          Generate a new changelog section for version ${{ steps.versions.outputs.current_version }}.
+
+          Match the existing changelog's style, format, language, and tone exactly. Look at how version headers and bullet points are formatted in the existing changelog above and follow that same pattern.
+
+          Keep the changelog CONCISE:
+          - Group related changes together where appropriate
+          - Use brief, clear descriptions
+          - Avoid redundant or overly detailed explanations
+          - Focus on what changed, not implementation details
+          - Combine similar updates into single lines when it makes sense (e.g., "Add columns X, Y, and Z to table")
+
+          ## CRITICAL OUTPUT REQUIREMENTS
+
+          Your response must ONLY contain the changelog markdown text itself.
+
+          DO NOT include:
+          - Any explanatory text like "I'll now..." or "Here's the..."
+          - Any introductory phrases or commentary
+          - Any meta-text about what you're doing
+          - Any conclusions or closing remarks
+
+          START IMMEDIATELY with the version header (e.g., \`## 2.0.0\` or \`## v2.0.0\`).
+
+          Your message should start with the version header.
+
+          You can read additional files from the repository if you need more context, but your final response must contain ONLY the changelog section text.
+
+          INSTRUCTIONS_EOF
+
+          echo "Prompt file created at /tmp/changelog_prompt.md"
+
+      - name: Generate changelog with Claude Code
+        id: claude
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: ${{ inputs.claude_model }}
+          allowed_tools: "Bash(git:*),Read,GrepTool,GlobTool"
+          prompt_file: /tmp/changelog_prompt.md
+          timeout_minutes: 10
+          max_turns: 20
+
+      - name: Extract changelog entry from Claude's response
+        id: extract
+        run: |
+          set -e
+
+          if [ ! -f "${{ steps.claude.outputs.execution_file }}" ]; then
+            echo "Error: Execution file not found"
+            exit 1
+          fi
+
+          # Get Claude's response
+          jq -r '[.[] | select(.type == "assistant") | .message.content[] | select(.type == "text") | .text] | last' \
+            "${{ steps.claude.outputs.execution_file }}" > /tmp/new_changelog_entry.md
+
+          # Basic validation: check it's not empty and has some content
+          if [ ! -s /tmp/new_changelog_entry.md ]; then
+            echo "Error: Claude returned empty response"
+            exit 1
+          fi
+
+          # Trim leading/trailing whitespace and ensure it ends with blank line
+          sed -i '/./,$!d' /tmp/new_changelog_entry.md
+          sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' /tmp/new_changelog_entry.md
+          echo "" >> /tmp/new_changelog_entry.md
+
+          echo "Changelog entry from Claude:"
+          cat /tmp/new_changelog_entry.md
+
+      - name: Update changelog file
+        id: update
+        run: |
+          set -e
+
+          # Backup the original changelog
+          cp "${{ inputs.changelog_file }}" "${{ inputs.changelog_file }}.bak"
+
+          # Find where to insert: after the first header line and any blank lines following it
+          # Look for first line starting with # (markdown header) or first non-blank line
+          insert_line=$(awk '
+            NR == 1 && /^#/ {
+              # Found header on first line, look for blank line after it
+              header_line = NR
+              next
+            }
+            header_line && /^$/ {
+              # Found blank line after header
+              print NR
+              exit
+            }
+            header_line && /[^[:space:]]/ {
+              # Found content after header without blank line
+              print NR - 1
+              exit
+            }
+            NR == 1 && !/^#/ {
+              # No header on first line, insert at top
+              print 0
+              exit
+            }
+          ' "${{ inputs.changelog_file }}.bak")
+
+          # If we didn't find a good spot, default to inserting after line 1
+          if [ -z "$insert_line" ]; then
+            insert_line=1
+          fi
+
+          # Create the new changelog with the entry inserted
+          if [ "$insert_line" -eq 0 ]; then
+            # Insert at the very top
+            {
+              cat /tmp/new_changelog_entry.md
+              cat "${{ inputs.changelog_file }}.bak"
+            } > "${{ inputs.changelog_file }}"
+          else
+            # Insert after the specified line
+            {
+              head -n "$insert_line" "${{ inputs.changelog_file }}.bak"
+              cat /tmp/new_changelog_entry.md
+              tail -n +$((insert_line + 1)) "${{ inputs.changelog_file }}.bak"
+            } > "${{ inputs.changelog_file }}"
+          fi
+
+          # Verify the update
+          if [ -s "${{ inputs.changelog_file }}" ] && ! diff -q "${{ inputs.changelog_file }}.bak" "${{ inputs.changelog_file }}" > /dev/null 2>&1; then
+            echo "✅ Changelog updated successfully"
+            echo "New changelog preview:"
+            head -20 "${{ inputs.changelog_file }}"
+          else
+            echo "❌ Error: Changelog was not updated"
+            echo "Restoring backup..."
+            mv "${{ inputs.changelog_file }}.bak" "${{ inputs.changelog_file }}"
+            exit 1
+          fi
+
+          # Clean up backup
+          rm -f "${{ inputs.changelog_file }}.bak"
+
+      - name: Create branch and commit changelog
+        id: branch
+        run: |
+          set -e
+
+          # Create unique branch name
+          timestamp=$(date +%s)
+          branch_name="${{ inputs.pr_branch_prefix }}-${{ steps.versions.outputs.current_version }}-${timestamp}"
+          echo "branch_name=$branch_name" >> $GITHUB_OUTPUT
+          echo "Creating branch: $branch_name"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create and checkout new branch
+          git checkout -b "$branch_name"
+
+          # Commit changes
+          git add "${{ inputs.changelog_file }}"
+          git commit -m "chore: update changelog for ${{ steps.versions.outputs.current_version }}"
+
+          # Push branch
+          git push origin "$branch_name"
+          echo "✅ Branch pushed successfully"
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch_name="${{ steps.branch.outputs.branch_name }}"
+
+          # Get default branch (works for both workflow_dispatch and workflow_call)
+          default_branch=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name || echo "main")
+          echo "Using default branch: $default_branch"
+
+          # Create PR body
+          {
+            echo "This PR updates the changelog for version **${{ steps.versions.outputs.current_version }}**."
+            echo ""
+            echo "## Changes"
+            echo ""
+            echo "- **Commits processed:** ${{ steps.prepare.outputs.commit_count }}"
+            echo "- **Version range:** \`${{ steps.versions.outputs.prev_version }}\` → \`${{ steps.versions.outputs.current_version }}\`"
+            echo ""
+            echo "---"
+            echo ""
+            echo "**Generated by:** Claude Code (${{ inputs.claude_model }})"
+            echo "**Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > /tmp/pr_body.txt
+
+          gh pr create \
+            --title "chore: changelog for ${{ steps.versions.outputs.current_version }}" \
+            --body-file /tmp/pr_body.txt \
+            --base "$default_branch" \
+            --head "$branch_name" \
+            --repo "${{ github.repository }}"
+
+          echo "✅ Pull request created successfully"
