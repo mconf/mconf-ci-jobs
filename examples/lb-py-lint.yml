@@ -1,0 +1,19 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-py-lint.yml@main
+    with:
+      # SRC_PATH (required): Source code path
+      SRC_PATH: "src"
+      # python-version (required): Python version
+      python-version: "3.11"
+      # black-version (required): Black version
+      black-version: "24.8.0"
+

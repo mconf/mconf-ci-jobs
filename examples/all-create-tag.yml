@@ -12,5 +12,8 @@ jobs:
   create-tag:
     uses: mconf/mconf-ci-jobs/.github/workflows/all-create-tag.yml@main
     with:
+      # version (required): Version to tag (e.g., 1.2.3 or v1.2.3)
       version: ${{ inputs.version }}
+      # tag_prefix (optional): Prefix for the tag (default: v)
+      # annotation_prefix (optional): Prefix for the tag annotation message (default: Version)
     secrets: inherit

@@ -1,0 +1,21 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  docker:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-push-scan-image.yml@main
+    # Optional inputs:
+    # build-args: Additional Docker build arguments
+    # image-suffix: Suffix to append to the image tag
+    # runs-on: Custom runner configuration (JSON array format)
+    secrets: inherit
+    # Required secrets:
+    # REGISTRY_ACCESS_TOKEN: DockerHub access token
+    # TRIVY_EXPLORER_AUTH_TOKEN: Authentication token for Trivy Explorer
+    # TRIVY_EXPLORER_URL: URL endpoint for Trivy Explorer
+    # Optional secrets:
+    # SSH_PRIVATE_KEY: For accessing private Git repositories during build

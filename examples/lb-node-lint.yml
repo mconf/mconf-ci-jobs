@@ -10,4 +10,5 @@ jobs:
   lint:
     uses: mconf/mconf-ci-jobs/.github/workflows/lb-node-lint.yml@main
     with:
+      # node-version (required): Node.js version
       node-version: '20'

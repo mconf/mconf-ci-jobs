@@ -1,0 +1,15 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-ruby-lint.yml@main
+    with:
+      # ruby-version (required): Ruby version
+      ruby-version: "3.2"
+

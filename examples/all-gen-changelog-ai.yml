@@ -16,9 +16,16 @@ jobs:
   generate-changelog-ai:
     uses: mconf/mconf-ci-jobs/.github/workflows/all-gen-changelog-ai.yml@main
     with:
+      # version (required): Version to generate changelog for (e.g., v1.2.3)
       version: ${{ inputs.version }}
+      # previous_version (optional): Previous version to compare against (auto-detects if not provided)
       previous_version: ${{ inputs.previous_version }}
+      # changelog_file (optional): Path to the changelog file (default: Changelog.md)
       changelog_file: 'Changelog.md'
+      # pr_branch_prefix (optional): Prefix for the PR branch name (default: changelog)
       pr_branch_prefix: 'auto-changelog'
+      # claude_model (optional): Claude model to use - haiku, sonnet, or opus (default: haiku)
       claude_model: 'haiku'
     secrets: inherit
+    # Required secrets:
+    # ANTHROPIC_API_KEY: Anthropic API key for Claude

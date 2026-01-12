@@ -10,4 +10,5 @@ jobs:
   build:
     uses: mconf/mconf-ci-jobs/.github/workflows/lb-node-build.yml@main
     with:
+      # node-version (required): Node.js version
       node-version: '20'
