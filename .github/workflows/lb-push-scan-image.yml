@@ -3,6 +3,15 @@ name: Push new tag
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      build-args:
+        type: string
+        required: false
+        default: ''
+      image-suffix:
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -33,6 +42,9 @@ jobs:
             TAG=$(echo "${{ github.head_ref }}" | sed 's/\//-/g')
           else
             TAG="${{github.ref_name}}"
+          fi
+          if [ -n "${{ inputs.image-suffix }}" ]; then
+            TAG="${TAG}${{ inputs.image-suffix }}"
           fi
           echo "IMAGE=${{github.repository}}:$TAG" >> "$GITHUB_OUTPUT"
 
@@ -69,6 +81,7 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: ${{ inputs.build-args }}
           labels: |
             ${{ steps.meta.outputs.labels }}
 
