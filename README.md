@@ -52,13 +52,13 @@ This repository provides a centralized collection of reusable GitHub Actions wor
   **Usage:** See [`examples/lb-ruby-lint.yml`](examples/lb-ruby-lint.yml)
 * `portal-ruby-lint.yml`
   Runs RuboCop and HAML linting for Rails applications. Reads Ruby version from `.ruby-version` file.
-  **Usage:** See [`.github/workflows/portal-ruby-lint.yml`](.github/workflows/portal-ruby-lint.yml)
+  **Usage:** See [`examples/portal-ruby-lint.yml`](examples/portal-ruby-lint.yml)
 * `portal-ruby-scan.yml`
   Scans Rails applications for security vulnerabilities using Brakeman. Reads Ruby version from `.ruby-version` file.
-  **Usage:** See [`.github/workflows/portal-ruby-scan.yml`](.github/workflows/portal-ruby-scan.yml)
+  **Usage:** See [`examples/portal-ruby-scan.yml`](examples/portal-ruby-scan.yml)
 * `portal-ruby-tests.yml`
   Runs Rails tests with MySQL and Redis services. Reads Ruby version from `.ruby-version` file. Requires OAuth and Devise secrets.
-  **Usage:** See [`.github/workflows/portal-ruby-tests.yml`](.github/workflows/portal-ruby-tests.yml)
+  **Usage:** See [`examples/portal-ruby-tests.yml`](examples/portal-ruby-tests.yml)
 
 
 ### Security & Docker Workflows
