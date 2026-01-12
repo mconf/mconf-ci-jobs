@@ -6,6 +6,10 @@ on:
       node-version:
         type: string
         required: true
+      build-env:
+        type: string
+        required: false
+        default: ''
       runs-on:
         type: string
         required: false
@@ -29,6 +33,15 @@ jobs:
 
       - name: Clean Install Project
         run: npm ci
+
+      - name: Set Build Environment Variables
+        if: ${{ inputs.build-env != '' }}
+        run: |
+          echo "${{ inputs.build-env }}" | while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              echo "$line" >> $GITHUB_ENV
+            fi
+          done
 
       - name: Build Project
         run: npm run build
