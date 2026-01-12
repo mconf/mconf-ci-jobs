@@ -12,6 +12,10 @@ on:
         type: string
         required: false
         default: ''
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
 
 permissions:
   contents: read
@@ -19,7 +23,7 @@ permissions:
 jobs:
   build-push-scan:
     name: Build, Push and Scan Docker
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 30
     steps:
       - name: Check out Source Repository

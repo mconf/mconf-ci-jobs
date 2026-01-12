@@ -6,12 +6,16 @@ on:
       node-version:
         type: string
         required: true
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
 permissions:
   contents: read
 jobs:
   Lint:
     name: Run lint
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 15
     steps:
       - name: Check out Source Repository
