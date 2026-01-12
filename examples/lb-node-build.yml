@@ -1,0 +1,13 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-node-build.yml@main
+    with:
+      node-version: '20'

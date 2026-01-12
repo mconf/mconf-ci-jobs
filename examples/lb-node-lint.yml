@@ -1,0 +1,13 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-node-lint.yml@main
+    with:
+      node-version: '20'

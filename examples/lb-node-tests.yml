@@ -1,0 +1,13 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-node-tests.yml@main
+    with:
+      node-version: '20'
