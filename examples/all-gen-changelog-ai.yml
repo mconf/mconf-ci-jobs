@@ -20,8 +20,8 @@ jobs:
       version: ${{ inputs.version }}
       # previous_version (optional): Previous version to compare against (auto-detects if not provided)
       previous_version: ${{ inputs.previous_version }}
-      # changelog_file (optional): Path to the changelog file (default: Changelog.md)
-      changelog_file: 'Changelog.md'
+      # changelog_file (optional): Path to the changelog file (default: CHANGELOG.md)
+      changelog_file: 'CHANGELOG.md'
       # pr_branch_prefix (optional): Prefix for the PR branch name (default: changelog)
       pr_branch_prefix: 'auto-changelog'
       # claude_model (optional): Claude model to use - haiku, sonnet, or opus (default: haiku)
