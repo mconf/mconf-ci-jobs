@@ -10,4 +10,5 @@ jobs:
   test:
     uses: mconf/mconf-ci-jobs/.github/workflows/lb-node-tests.yml@main
     with:
+      # node-version (required): Node.js version
       node-version: '20'

@@ -1,0 +1,13 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  scan:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-scan.yml@main
+    secrets: inherit
+

@@ -1,0 +1,12 @@
+name: CI - Lint
+
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+
+jobs:
+  lint:
+    uses: mconf/mconf-ci-jobs/.github/workflows/portal-ruby-lint.yml@main
+    # No inputs required - uses .ruby-version file from repository
+    secrets: inherit

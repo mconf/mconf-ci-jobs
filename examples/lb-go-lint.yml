@@ -1,0 +1,18 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-go-lint.yml@main
+    with:
+      # go-version (required): Go version to use
+      go-version: "1.21"
+      # golangci-lint-version (required): golangci-lint version
+      golangci-lint-version: "v1.55.2"
+    secrets: inherit
+

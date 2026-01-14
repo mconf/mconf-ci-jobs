@@ -1,0 +1,16 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-go-build.yml@main
+    with:
+      # go-version (required): Go version to use
+      go-version: "1.21"
+    secrets: inherit
+

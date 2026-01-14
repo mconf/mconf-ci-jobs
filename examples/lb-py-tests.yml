@@ -1,0 +1,22 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    uses: mconf/mconf-ci-jobs/.github/workflows/lb-py-tests.yml@main
+    with:
+      # SRC_PATH (required): Source code path
+      SRC_PATH: "src"
+      # TESTS_PATH (required): Tests directory path
+      TESTS_PATH: "tests"
+      # python-version (required): Python version
+      python-version: "3.11"
+      # env-file (required): Path to .env file for test environment
+      env-file: ".env.test"
+    secrets: inherit
+
