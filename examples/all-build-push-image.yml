@@ -19,7 +19,8 @@ jobs:
       # platforms (optional): Target platforms (default: linux/amd64)
       # dockerhub_username (optional): DockerHub username for login (leave empty to skip DockerHub login)
       # runs-on (optional): Runner to use (default: ["self-hosted", "ubuntu-22.04"])
-    secrets:
-      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
-      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-      # DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+    secrets: inherit
+    # Required secrets:
+    # HARBOR_USERNAME: Harbor registry username
+    # HARBOR_PASSWORD: Harbor registry password
+    # DOCKERHUB_PASSWORD: DockerHub password (required if dockerhub_username is provided)
