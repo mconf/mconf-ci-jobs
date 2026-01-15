@@ -1,0 +1,25 @@
+name: Build and Push Harbor Images
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-build-push-image.yml@main
+    with:
+      # image_name (required): Name of the Docker image
+      image_name: my-app
+      # organization (required): Harbor organization name
+      organization: my-organization
+      # registry (required): Docker registry URL
+      registry: registry.example.com
+      # dockerfile_path (optional): Path to Dockerfile (default: ./Dockerfile)
+      # platforms (optional): Target platforms (default: linux/amd64)
+      # dockerhub_username (optional): DockerHub username for login (leave empty to skip DockerHub login)
+      # runs-on (optional): Runner to use (default: ["self-hosted", "ubuntu-22.04"])
+    secrets:
+      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      # DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
