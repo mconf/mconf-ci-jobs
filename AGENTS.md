@@ -37,6 +37,7 @@ README.md           # Documentation index
 ### Code Quality Standards
 - **DRY**: Extract common steps into composite actions if repeated across 3+ workflows
 - **YAGNI**: Only add features when actually needed by consumers
+- **Consistency**: Follow established patterns in existing workflows
 - **Validation**: Test workflows run successfully on example repositories
 - **Examples**: Every workflow must have a corresponding example file in `examples/` with documented inputs as comments
   - Format: `# parameter_name (required/optional): Description (default: value if applicable)`
