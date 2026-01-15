@@ -63,6 +63,9 @@ This repository provides a centralized collection of reusable GitHub Actions wor
 
 ### Security & Docker Workflows
 
+* `all-build-push-image.yml`
+  Builds and pushes Docker images to Harbor with automatic tagging and caching. Supports multi-platform builds and optional DockerHub login for base images.
+  **Usage:** See [`examples/all-build-push-image.yml`](examples/all-build-push-image.yml)
 * `lb-scan.yml`
   Scans repository filesystem for security vulnerabilities using Trivy. Requires `pull-requests: write` permission.
   **Usage:** See [`examples/lb-scan.yml`](examples/lb-scan.yml)
@@ -93,7 +96,10 @@ All workflows include:
 Workflows may require the following secrets (configured in your repository):
 
 - `SSH_PRIVATE_KEY`: SSH key for accessing private Git repositories
-- `REGISTRY_ACCESS_TOKEN`: DockerHub access token for pushing images
+- `HARBOR_USERNAME`: Harbor registry username
+- `HARBOR_PASSWORD`: Harbor registry password
+- `DOCKERHUB_PASSWORD`: DockerHub password
+- `REGISTRY_ACCESS_TOKEN`: DockerHub access token for pushing images (will be deprecated in favor of `DOCKERHUB_PASSWORD`)
 - `TRIVY_EXPLORER_AUTH_TOKEN`: Authentication for Trivy Explorer
 - `TRIVY_EXPLORER_URL`: Trivy Explorer endpoint URL
 - `GITHUB_TOKEN`: Automatically provided by GitHub Actions
