@@ -29,3 +29,7 @@ jobs:
         run: bundle exec rubocop -l -f github --config .rubocop.yml
       - name: Lint HAML files
         run: bundle exec haml-lint -c .haml-lint.yml app/views
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.3.0
+        with:
+          dockerfile: Dockerfile
