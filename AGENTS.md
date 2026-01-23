@@ -29,6 +29,7 @@ README.md           # Documentation index
 - **Reusability**: All workflows use `workflow_call` trigger
 - **Versioning**: Consumers reference by branch/tag (`@main`, `@v1.0.0`)
 - **Inputs**: Document all inputs with comments in example files
+- **Runner configuration**: Include a `runs-on` input parameter (type: string, default: `'["self-hosted", "ubuntu-22.04"]'`) and use `${{ fromJSON(inputs.runs-on) }}` in job definitions to allow consumers to override the runner
 - **Dependencies**: Minimize dependencies and reuse across workflows. If one workflow uses a dependency, favor reusing it in others
 - **Dependency updates**: When updating a dependency in one workflow, review if others using it should be updated too
 - **SSH support**: Include optional SSH agent setup when `SSH_PRIVATE_KEY` secret exists
@@ -36,8 +37,13 @@ README.md           # Documentation index
 ### Code Quality Standards
 - **DRY**: Extract common steps into composite actions if repeated across 3+ workflows
 - **YAGNI**: Only add features when actually needed by consumers
+- **Consistency**: Follow established patterns in existing workflows
 - **Validation**: Test workflows run successfully on example repositories
 - **Examples**: Every workflow must have a corresponding example file in `examples/` with documented inputs as comments
+  - Format: `# parameter_name (required/optional): Description (default: value if applicable)`
+  - Use inline comments on the same line as parameters
+  - No blank lines between parameters
+  - Show required parameters with actual values, optional parameters as commented examples
 
 ## Common Tasks
 
