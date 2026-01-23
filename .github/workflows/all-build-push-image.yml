@@ -25,6 +25,11 @@ on:
         required: false
         type: string
         default: 'linux/amd64'
+      build_target:
+        description: 'Docker build target stage (optional, defaults to last stage)'
+        required: false
+        type: string
+        default: ''
       runs-on:
         type: string
         required: false
@@ -105,6 +110,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          target: ${{ inputs.build_target }}
           cache-from: |
             type=gha,scope=${{ inputs.image_name }}
             type=registry,ref=${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}:buildcache,image-manifest=true
