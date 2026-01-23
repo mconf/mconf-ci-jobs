@@ -98,6 +98,7 @@ Workflows may require the following secrets (configured in your repository):
 - `SSH_PRIVATE_KEY`: SSH key for accessing private Git repositories
 - `HARBOR_USERNAME`: Harbor registry username
 - `HARBOR_PASSWORD`: Harbor registry password
+- `DOCKERHUB_USERNAME`: DockerHub username
 - `DOCKERHUB_PASSWORD`: DockerHub password
 - `REGISTRY_ACCESS_TOKEN`: DockerHub access token for pushing images (will be deprecated in favor of `DOCKERHUB_PASSWORD`)
 - `TRIVY_EXPLORER_AUTH_TOKEN`: Authentication for Trivy Explorer
