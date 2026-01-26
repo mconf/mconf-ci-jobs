@@ -231,12 +231,14 @@ jobs:
 
           Match the existing changelog's style, format, language, and tone exactly. Look at how version headers and bullet points are formatted in the existing changelog above and follow that same pattern.
 
-          Keep the changelog CONCISE:
+          Guidelines:
+          - Prioritize main features and significant changes at the top of the list
+          - Write clear, descriptive entries that make it obvious what changed - avoid vague phrases like "Update X" or "Improve Y" without context
+          - If entries are too brief or unclear, expand them with better phrasing while staying concise (e.g., instead of "Add new API endpoints", write "Add new API endpoints for user authentication and profile management")
           - Group related changes together where appropriate
-          - Use brief, clear descriptions
-          - Avoid redundant or overly detailed explanations
-          - Focus on what changed, not implementation details
+          - Focus on what changed from the user's perspective, not implementation details
           - Combine similar updates into single lines when it makes sense (e.g., "Add columns X, Y, and Z to table")
+          - Balance conciseness with clarity: be brief but descriptive enough that each entry is meaningful on its own
 
           ## CRITICAL OUTPUT REQUIREMENTS
 
