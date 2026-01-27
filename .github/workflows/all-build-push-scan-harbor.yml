@@ -34,12 +34,10 @@ on:
         description: 'Enable pushing to registry (default: auto-detect tags)'
         type: boolean
         required: false
-        default: null
       scan_enabled:
         description: 'Enable Trivy scanning (default: auto-detect if secrets present)'
         type: boolean
         required: false
-        default: null
       runs-on:
         type: string
         required: false
@@ -82,10 +80,11 @@ jobs:
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       # Auto-detect push: enabled for tags, disabled otherwise (unless explicitly set)
-      PUSH_ENABLED: ${{ inputs.push_enabled != null && inputs.push_enabled || startsWith(github.ref, 'refs/tags/') }}
+      PUSH_ENABLED: ${{ inputs.push_enabled != '' && inputs.push_enabled || startsWith(github.ref, 'refs/tags/') }}
       # Auto-detect scan: enabled if Trivy secrets are present (unless explicitly disabled)
-      SCAN_ENABLED: ${{ inputs.scan_enabled != null && inputs.scan_enabled || (secrets.TRIVY_EXPLORER_URL != '' && secrets.TRIVY_EXPLORER_AUTH_TOKEN != '') }}
+      SCAN_ENABLED: ${{ inputs.scan_enabled != '' && inputs.scan_enabled || (secrets.TRIVY_EXPLORER_URL != '' && secrets.TRIVY_EXPLORER_AUTH_TOKEN != '') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -96,7 +95,6 @@ jobs:
           version: v0.29.1
           driver-opts: |
             image=moby/buildkit:v0.12.5
-          install: true
 
       - name: Log in to Harbor Registry
         if: env.PUSH_ENABLED == 'true'
@@ -114,11 +112,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Install SSH Agent
-        if: secrets.SSH_PRIVATE_KEY != ''
+        if: ${{ env.SSH_PRIVATE_KEY != '' }}
         run: sudo apt-get update && sudo apt-get install -y openssh-client
 
       - name: Configure Git to Access Private Modules
-        if: secrets.SSH_PRIVATE_KEY != ''
+        if: ${{ env.SSH_PRIVATE_KEY != '' }}
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -142,7 +140,7 @@ jobs:
         with:
           context: .
           file: ${{ inputs.dockerfile_path }}
-          ssh: ${{ secrets.SSH_PRIVATE_KEY != '' && format('default={0}', env.SSH_AUTH_SOCK) || '' }}
+          ssh: ${{ env.SSH_PRIVATE_KEY != '' && format('default={0}', env.SSH_AUTH_SOCK) || '' }}
           push: ${{ env.PUSH_ENABLED == 'true' }}
           load: ${{ env.SCAN_ENABLED == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
