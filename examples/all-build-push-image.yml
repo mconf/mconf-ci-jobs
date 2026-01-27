@@ -17,6 +17,7 @@ jobs:
       registry: registry.example.com
       # dockerfile_path (optional): Path to Dockerfile (default: ./Dockerfile)
       # platforms (optional): Target platforms (default: linux/amd64)
+      # build_target (optional): Docker build target stage (default: last stage)
       # runs-on (optional): Runner to use (default: ["self-hosted", "ubuntu-22.04"])
     secrets: inherit
     # Required secrets:
