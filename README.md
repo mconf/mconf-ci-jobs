@@ -6,6 +6,29 @@ Reusable GitHub Actions workflows for CI/CD pipelines across Mconf projects.
 
 This repository provides a centralized collection of reusable GitHub Actions workflows for building, testing, linting, and deploying applications across multiple programming languages and platforms. All workflows are optimized for self-hosted runners and follow security best practices.
 
+## Workflow Comparison
+
+| Workflow | Action | Language/Tool | Registry | Security | Coverage | Private Repos | AI | Key Features |
+|----------|--------|---------------|----------|----------|----------|---------------|----|--------------|
+| **all-build-push-image** | Build+Push | Docker | Harbor | | | | | Multi-platform, metadata extraction, GHA+registry caching |
+| **all-create-tag** | Release | Git | | | | | | Version validation, annotated tags |
+| **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
+| **lb-go-build** | Build | Go | | | | ✓ | | CGO, private modules, build-essential |
+| **lb-go-lint** | Lint | Go, golangci-lint | | | | ✓ | | 10min timeout, private module support |
+| **lb-go-tests** | Test | Go, Gocov | | | ✓ | ✓ | | Coverage XML, PR comments, file change detection |
+| **lb-node-build** | Build | Node.js, npm | | | | | | Custom env vars, npm cache |
+| **lb-node-lint** | Lint | Node.js, ESLint | | | | | | Multiple file extensions (.js/.jsx/.ts/.tsx) |
+| **lb-node-tests** | Test | Node.js, npm | | | | | | File change detection |
+| **lb-py-lint** | Lint | Python, Flake8, Black, isort | | | | | | pip-based, libpq-dev |
+| **lb-py-pdm-lint** | Lint | Python, Flake8, Black, isort, PDM | | | | | | PDM-based dependency management |
+| **lb-py-tests** | Test | Python, pytest, PDM | | | ✓ | | | Coverage XML, PR reports, env file loading, file detection |
+| **lb-push-scan-image** | Build+Push+Scan | Docker, Trivy | DockerHub | ✓ | | ✓ | | Dynamic tagging, Trivy Explorer upload, job summary |
+| **lb-ruby-lint** | Lint | Ruby, RuboCop | | | | | | Build tools, libpq-dev, Gemfile caching |
+| **lb-scan** | Scan | Trivy | | ✓ | | | | Filesystem scan, SARIF to PR comments |
+| **portal-ruby-lint** | Lint | Ruby, RuboCop, HAML | | | | | | HAML views linting |
+| **portal-ruby-scan** | Scan | Ruby, Brakeman | | ✓ | | | | Rails security vulnerabilities |
+| **portal-ruby-tests** | Test | Ruby, RSpec, Rails | | | | | | MySQL+Redis services, Chromium, ImageMagick, secrets |
+
 ## Available Workflows
 
 ### Go Workflows

@@ -55,14 +55,16 @@ README.md           # Documentation index
 5. Add dependency caching if applicable
 6. Create example file in `examples/` with input documentation as comments
 7. Document in README.md under appropriate section
-8. Test on real repository before merging
+8. **Add entry to the workflow comparison table in README.md in alphabetical order**
+9. Test on real repository before merging
 
 ### Modifying Existing Workflows
 1. Check README for consumers that reference this workflow
 2. Maintain backward compatibility or coordinate breaking changes
 3. **Always review and update** the corresponding example file in `examples/`
-4. If changing dependencies, check if other workflows use them and should be updated
-5. Test changes don't break example usage
+4. **Update the workflow comparison table in README.md** if the changes affect features, tools, or capabilities (maintain alphabetical order)
+5. If changing dependencies, check if other workflows use them and should be updated
+6. Test changes don't break example usage
 
 ### Debugging Workflow Issues
 - Check or request runner logs for actual error messages
