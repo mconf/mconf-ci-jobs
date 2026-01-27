@@ -11,8 +11,11 @@ This repository provides a centralized collection of reusable GitHub Actions wor
 | Workflow | Action | Language/Tool | Registry | Security | Coverage | Private Repos | AI | Key Features |
 |----------|--------|---------------|----------|----------|----------|---------------|----|--------------|
 | **all-build-push-image** | Build+Push | Docker | Harbor | | | | | Multi-platform, metadata extraction, GHA+registry caching |
+| **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Auto-detect push/scan, SSH support, Trivy Explorer upload |
 | **all-create-tag** | Release | Git | | | | | | Version validation, annotated tags |
 | **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
+| **data-py-uv-lint** | Lint | Python, Flake8, Black, isort, uv | | | | | | uv-based dependency management |
+| **data-py-uv-tests** | Test | Python, pytest, uv | | | ✓ | | | uv-based dependency management, configurable pytest markers |
 | **lb-go-build** | Build | Go | | | | ✓ | | CGO, private modules, build-essential |
 | **lb-go-lint** | Lint | Go, golangci-lint | | | | ✓ | | 10min timeout, private module support |
 | **lb-go-tests** | Test | Go, Gocov | | | ✓ | ✓ | | Coverage XML, PR comments, file change detection |
@@ -68,6 +71,15 @@ This repository provides a centralized collection of reusable GitHub Actions wor
   Runs Python tests with coverage reporting (PDM-based projects). Requires `pull-requests: write` permission.
   **Usage:** See [`examples/lb-py-tests.yml`](examples/lb-py-tests.yml)
 
+### Data Team Python Workflows (uv)
+
+* `data-py-uv-lint.yml`
+  Runs Flake8, Black, and isort on Python code (uv-based projects).
+  **Usage:** See [`examples/data-py-uv-lint.yml`](examples/data-py-uv-lint.yml)
+* `data-py-uv-tests.yml`
+  Runs Python tests with coverage reporting (uv-based projects). Includes configurable pytest markers. Requires `pull-requests: write` permission.
+  **Usage:** See [`examples/data-py-uv-tests.yml`](examples/data-py-uv-tests.yml)
+
 ### Ruby Workflows
 
 * `lb-ruby-lint.yml`
@@ -89,6 +101,9 @@ This repository provides a centralized collection of reusable GitHub Actions wor
 * `all-build-push-image.yml`
   Builds and pushes Docker images to Harbor with automatic tagging and caching. Supports multi-platform builds and optional DockerHub login for base images.
   **Usage:** See [`examples/all-build-push-image.yml`](examples/all-build-push-image.yml)
+* `all-build-push-scan-harbor.yml`
+  Builds, pushes Docker images to Harbor, and scans with Trivy. Includes auto-detection for push and scan based on git refs and available secrets. Supports SSH for private dependencies.
+  **Usage:** See [`examples/all-build-push-scan-harbor.yml`](examples/all-build-push-scan-harbor.yml)
 * `lb-scan.yml`
   Scans repository filesystem for security vulnerabilities using Trivy. Requires `pull-requests: write` permission.
   **Usage:** See [`examples/lb-scan.yml`](examples/lb-scan.yml)

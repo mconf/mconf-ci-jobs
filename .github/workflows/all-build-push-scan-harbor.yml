@@ -1,0 +1,202 @@
+name: Build, Push and Scan Harbor Images
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        description: 'Name of the Docker image'
+        required: true
+        type: string
+      organization:
+        description: 'Harbor organization name'
+        required: true
+        type: string
+      registry:
+        description: 'Docker registry URL'
+        required: true
+        type: string
+      dockerfile_path:
+        description: 'Path to Dockerfile'
+        required: false
+        type: string
+        default: './Dockerfile'
+      platforms:
+        description: 'Target platforms for the build'
+        required: false
+        type: string
+        default: 'linux/amd64'
+      build-args:
+        description: 'Build arguments for Docker build'
+        type: string
+        required: false
+        default: ''
+      push_enabled:
+        description: 'Enable pushing to registry (default: auto-detect tags)'
+        type: boolean
+        required: false
+        default: null
+      scan_enabled:
+        description: 'Enable Trivy scanning (default: auto-detect if secrets present)'
+        type: boolean
+        required: false
+        default: null
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+    secrets:
+      HARBOR_USERNAME:
+        description: 'Harbor registry username'
+        required: false
+      HARBOR_PASSWORD:
+        description: 'Harbor registry password'
+        required: false
+      DOCKERHUB_USERNAME:
+        description: 'DockerHub username for login (optional)'
+        required: false
+      DOCKERHUB_PASSWORD:
+        description: 'DockerHub password (required if DOCKERHUB_USERNAME is provided)'
+        required: false
+      SSH_PRIVATE_KEY:
+        description: 'SSH private key for accessing private repositories (optional)'
+        required: false
+      TRIVY_EXPLORER_AUTH_TOKEN:
+        description: 'Authentication token for Trivy Explorer'
+        required: false
+      TRIVY_EXPLORER_URL:
+        description: 'URL for Trivy Explorer'
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-push-scan:
+    name: Build, Push and Scan Docker
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 30
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      # Auto-detect push: enabled for tags, disabled otherwise (unless explicitly set)
+      PUSH_ENABLED: ${{ inputs.push_enabled != null && inputs.push_enabled || startsWith(github.ref, 'refs/tags/') }}
+      # Auto-detect scan: enabled if Trivy secrets are present (unless explicitly disabled)
+      SCAN_ENABLED: ${{ inputs.scan_enabled != null && inputs.scan_enabled || (secrets.TRIVY_EXPLORER_URL != '' && secrets.TRIVY_EXPLORER_AUTH_TOKEN != '') }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: v0.29.1
+          driver-opts: |
+            image=moby/buildkit:v0.12.5
+          install: true
+
+      - name: Log in to Harbor Registry
+        if: env.PUSH_ENABLED == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Login to DockerHub
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_PASSWORD != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Install SSH Agent
+        if: secrets.SSH_PRIVATE_KEY != ''
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+      - name: Configure Git to Access Private Modules
+        if: secrets.SSH_PRIVATE_KEY != ''
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}},prefix=v
+            type=semver,pattern={{major}}.{{minor}},prefix=v
+            type=semver,pattern=latest
+            type=raw,value=edge,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+
+      - name: Build and conditionally push image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ inputs.dockerfile_path }}
+          ssh: ${{ secrets.SSH_PRIVATE_KEY != '' && format('default={0}', env.SSH_AUTH_SOCK) || '' }}
+          push: ${{ env.PUSH_ENABLED == 'true' }}
+          load: ${{ env.SCAN_ENABLED == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: |
+            type=gha,scope=${{ inputs.image_name }}
+            type=registry,ref=${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}:buildcache,image-manifest=true
+          cache-to: |
+            type=gha,mode=max,scope=${{ inputs.image_name }},ignore-error=true
+            type=registry,ref=${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}:buildcache,mode=max,image-manifest=true,ignore-error=true
+          platforms: ${{ inputs.platforms }}
+          build-args: ${{ inputs.build-args }}
+          provenance: false
+          sbom: false
+
+      - name: Output build summary
+        run: |
+          echo "Build Summary:" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Push enabled: ${{ env.PUSH_ENABLED }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Scan enabled: ${{ env.SCAN_ENABLED }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Platforms: ${{ inputs.platforms }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ env.PUSH_ENABLED }}" == "true" ]; then
+            echo "- Image digest: ${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Generate Unique Identifier
+        if: env.SCAN_ENABLED == 'true'
+        id: generate-uuid
+        run: echo "UUID=$(cat /proc/sys/kernel/random/uuid)" >> "$GITHUB_ENV"
+
+      - name: Run Trivy on Docker Image
+        if: env.SCAN_ENABLED == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}:${{ github.ref_name }}
+          ignore-unfixed: true
+          format: "json"
+          output: "/tmp/${{ env.UUID }}.json"
+          severity: "CRITICAL,HIGH"
+
+      - name: Upload Trivy results to Trivy Explorer
+        if: env.SCAN_ENABLED == 'true'
+        id: upload_trivy
+        run: |
+          RESPONSE=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${{ secrets.TRIVY_EXPLORER_AUTH_TOKEN }}" --data "@/tmp/${{ env.UUID }}.json" ${{ secrets.TRIVY_EXPLORER_URL }})
+          echo "Response: $RESPONSE"
+          REPORT_URL=$(echo "$RESPONSE" | jq -r '.url')
+          echo "report_url=$REPORT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Add Trivy Report Link to Job Summary
+        if: env.SCAN_ENABLED == 'true'
+        run: |
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Trivy Security Scan" >> "$GITHUB_STEP_SUMMARY"
+          echo "A security scan report has been generated." >> "$GITHUB_STEP_SUMMARY"
+          echo "[View Detailed Report](${{ steps.upload_trivy.outputs.report_url }})" >> "$GITHUB_STEP_SUMMARY"
