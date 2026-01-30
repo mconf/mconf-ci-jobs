@@ -274,10 +274,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: ${{ env.CHANGELOG_PROMPT }}
-          claude_args: |
-            --model claude-${{ inputs.claude_model }}
-            --max-turns 20
-            --allowedTools Bash(git:*),Read,GrepTool,GlobTool
+          claude_args: --model claude-${{ inputs.claude_model }} --max-turns 20 --allowedTools Bash(git:*),Read,GrepTool,GlobTool
 
       - name: Extract changelog entry from Claude's response
         id: extract
