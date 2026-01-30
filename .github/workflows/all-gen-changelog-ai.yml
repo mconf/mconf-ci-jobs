@@ -41,11 +41,18 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
 
     steps:
+      - name: Get OIDC app token
+        id: get-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: 1003941 # Claude Code GitHub App ID
+          owner: ${{ github.repository_owner }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.get-token.outputs.token }}
           fetch-depth: 0
           persist-credentials: true
 
@@ -94,7 +101,7 @@ jobs:
       - name: Gather PR information between versions
         id: prs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.get-token.outputs.token }}
           REPO: ${{ github.repository }}
         run: |
           set +e
@@ -380,7 +387,7 @@ jobs:
       - name: Create branch and commit changelog
         id: branch
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.get-token.outputs.token }}
         run: |
           set -e
 
@@ -406,7 +413,7 @@ jobs:
 
       - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.get-token.outputs.token }}
         run: |
           branch_name="${{ steps.branch.outputs.branch_name }}"
 
