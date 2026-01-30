@@ -44,7 +44,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Install dependencies
         run: |
@@ -376,6 +379,8 @@ jobs:
 
       - name: Create branch and commit changelog
         id: branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
 
@@ -395,7 +400,7 @@ jobs:
           git add "${{ inputs.changelog_file }}"
           git commit -m "chore: update changelog for ${{ steps.versions.outputs.current_version }}"
 
-          # Push branch
+          # Push branch using the persisted credentials from checkout
           git push origin "$branch_name"
           echo "✅ Branch pushed successfully"
 
