@@ -34,6 +34,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   update-changelog-ai:
@@ -260,16 +261,23 @@ jobs:
 
           echo "Prompt file created at /tmp/changelog_prompt.md"
 
+      - name: Read prompt file
+        id: read_prompt
+        run: |
+          echo "CHANGELOG_PROMPT<<EOF" >> $GITHUB_ENV
+          cat /tmp/changelog_prompt.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Generate changelog with Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: ${{ inputs.claude_model }}
-          allowed_tools: "Bash(git:*),Read,GrepTool,GlobTool"
-          prompt_file: /tmp/changelog_prompt.md
-          timeout_minutes: 10
-          max_turns: 20
+          prompt: ${{ env.CHANGELOG_PROMPT }}
+          claude_args: |
+            --model claude-${{ inputs.claude_model }}
+            --max-turns 20
+            --allowedTools Bash(git:*),Read,GrepTool,GlobTool
 
       - name: Extract changelog entry from Claude's response
         id: extract
