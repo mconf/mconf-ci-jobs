@@ -277,6 +277,15 @@ jobs:
           claude_args: |
             --allowedTools "Bash(git:*),Read,GrepTool,GlobTool"
 
+      # The Claude Code action rewrites the repo remote to use a short‑lived installation token and then deletes it,
+      # so we need to restore the original auth to be able to push changes.
+      - name: Restore GitHub auth for push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+
       - name: Extract changelog entry from Claude's response
         id: extract
         run: |

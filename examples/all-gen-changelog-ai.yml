@@ -14,6 +14,10 @@ on:
 
 jobs:
   generate-changelog-ai:
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     uses: mconf/mconf-ci-jobs/.github/workflows/all-gen-changelog-ai.yml@main
     with:
       # version (required): Version to generate changelog for (e.g., v1.2.3)
@@ -26,6 +30,8 @@ jobs:
       pr_branch_prefix: 'auto-changelog'
       # claude_model (optional): Claude model to use - haiku, sonnet, or opus (default: haiku)
       claude_model: 'haiku'
+      # runs-on (optional): JSON array of runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on: '["self-hosted", "ubuntu-22.04"]'
     secrets: inherit
     # Required secrets:
     # ANTHROPIC_API_KEY: Anthropic API key for Claude
