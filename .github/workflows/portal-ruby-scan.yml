@@ -18,7 +18,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
             build-essential git libmariadb-dev libsqlite3-dev libyaml-dev pkg-config tzdata
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
