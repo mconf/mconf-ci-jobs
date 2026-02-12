@@ -12,19 +12,23 @@ jobs:
     with:
       image_name: my-app # (required) Name of the Docker image
       organization: my-org # (required) Harbor organization name
-      registry: harbor.example.com # (required) Docker registry URL
+      # registry: registry.mconf.com # (optional) Docker registry URL (default: registry.mconf.com)
+      # context_path: . # (optional) Build context directory (default: .)
       # dockerfile_path: './Dockerfile' # (optional) Path to Dockerfile (default: ./Dockerfile)
+      # build_target: '' # (optional) Docker build target stage for multi-stage builds (default: '')
       # platforms: 'linux/amd64' # (optional) Target platforms (default: linux/amd64)
       # build-args: | # (optional) Build arguments
       #   ARG1=value1
       #   ARG2=value2
       # push_enabled: true # (optional) Force enable/disable push (default: auto-detect from tags)
       # scan_enabled: true # (optional) Force enable/disable scanning (default: auto-detect from secrets)
-    secrets:
-      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }} # (required) Harbor registry username
-      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }} # (required) Harbor registry password
-      # DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }} # (optional) DockerHub username for pulling base images
-      # DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }} # (optional) DockerHub password
-      # SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # (optional) SSH key for private dependencies
-      # TRIVY_EXPLORER_AUTH_TOKEN: ${{ secrets.TRIVY_EXPLORER_AUTH_TOKEN }} # (optional) Trivy Explorer auth token
-      # TRIVY_EXPLORER_URL: ${{ secrets.TRIVY_EXPLORER_URL }} # (optional) Trivy Explorer URL
+    secrets: inherit # Passes all secrets to the reusable workflow
+    # Or specify secrets explicitly:
+    # secrets:
+    #   HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }} # Harbor registry username
+    #   HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }} # Harbor registry password
+    #   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }} # (optional) DockerHub username for pulling base images
+    #   DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }} # (optional) DockerHub password
+    #   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # (optional) SSH key for private dependencies
+    #   TRIVY_EXPLORER_AUTH_TOKEN: ${{ secrets.TRIVY_EXPLORER_AUTH_TOKEN }} # (optional) Trivy Explorer auth token
+    #   TRIVY_EXPLORER_URL: ${{ secrets.TRIVY_EXPLORER_URL }} # (optional) Trivy Explorer URL

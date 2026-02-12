@@ -1,0 +1,138 @@
+name: Helm Chart Publish to Harbor
+
+on:
+  workflow_call:
+    inputs:
+      chart_path:
+        description: 'Path to Helm chart directory'
+        required: true
+        type: string
+      chart_name:
+        description: 'Chart name (used for extracting version from tag)'
+        required: true
+        type: string
+      organization:
+        description: 'Harbor organization name'
+        required: true
+        type: string
+      registry:
+        description: 'Harbor registry URL'
+        required: false
+        type: string
+        default: 'registry.mconf.com'
+      chart_repo:
+        description: 'Helm chart repository name in Harbor'
+        required: false
+        type: string
+        default: 'helm-charts'
+      helm_version:
+        description: 'Helm version to use'
+        required: false
+        type: string
+        default: 'v3.12.0'
+      tag_prefix:
+        description: 'Tag prefix to extract version from (e.g., "myapp-helm-chart-" from tag "myapp-helm-chart-1.0.0")'
+        required: false
+        type: string
+        default: ''
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+    secrets:
+      HARBOR_USERNAME:
+        description: 'Harbor registry username'
+        required: true
+      HARBOR_PASSWORD:
+        description: 'Harbor registry password'
+        required: true
+    outputs:
+      chart_version:
+        description: 'Published chart version'
+        value: ${{ jobs.publish.outputs.chart_version }}
+      chart_url:
+        description: 'Full chart OCI URL'
+        value: ${{ jobs.publish.outputs.chart_url }}
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish Helm Chart
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 15
+    outputs:
+      chart_version: ${{ steps.version.outputs.version }}
+      chart_url: ${{ steps.publish.outputs.chart_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ inputs.helm_version }}
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Extract version from tag
+          VERSION=${GITHUB_REF#refs/tags/}
+
+          # Remove tag prefix if provided (e.g., "myapp-helm-chart-1.0.0" -> "1.0.0")
+          if [ -n "${{ inputs.tag_prefix }}" ]; then
+            VERSION=${VERSION#${{ inputs.tag_prefix }}}
+          else
+            # Default: remove "{chart_name}-helm-chart-" prefix
+            VERSION=${VERSION#${{ inputs.chart_name }}-helm-chart-}
+          fi
+
+          echo "📋 Publishing chart version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Lint chart
+        run: |
+          echo "🔍 Linting Helm chart..."
+          helm lint ${{ inputs.chart_path }}
+          echo "✅ Chart linting passed"
+
+      - name: Package chart
+        run: |
+          echo "📦 Packaging Helm chart..."
+          helm package ${{ inputs.chart_path }}
+          ls -la *.tgz
+          echo "✅ Chart packaged successfully"
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Push to Harbor
+        id: publish
+        run: |
+          CHART_FILE=$(ls ${{ inputs.chart_name }}-*.tgz)
+          CHART_URL="oci://${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.chart_repo }}"
+
+          echo "🚀 Publishing $CHART_FILE to Harbor..."
+          helm push "$CHART_FILE" "$CHART_URL"
+
+          echo "✅ Chart published successfully to Harbor"
+          echo "📋 Chart version: ${{ steps.version.outputs.version }}"
+          echo "📋 Chart repository: $CHART_URL"
+          echo "chart_url=$CHART_URL" >> $GITHUB_OUTPUT
+
+          # Add to job summary
+          echo "## 📦 Helm Chart Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Chart:** \`${{ inputs.chart_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository:** \`$CHART_URL\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Install Command" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "helm install ${{ inputs.chart_name }} $CHART_URL/${{ inputs.chart_name }} --version ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

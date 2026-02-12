@@ -1,0 +1,24 @@
+name: Helm Chart Publish
+
+on:
+  push:
+    tags:
+      - 'my-app-helm-chart-*' # Tag pattern: {chart_name}-helm-chart-{version}
+
+jobs:
+  publish:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-helm-publish.yml@main
+    with:
+      chart_path: chart # (required) Path to Helm chart directory
+      chart_name: my-app # (required) Chart name (used for version extraction from tag)
+      organization: my-org # (required) Harbor organization name
+      # registry: registry.mconf.com # (optional) Harbor registry URL (default: registry.mconf.com)
+      # chart_repo: helm-charts # (optional) Helm chart repository name in Harbor (default: helm-charts)
+      # helm_version: v3.12.0 # (optional) Helm version to use (default: v3.12.0)
+      # tag_prefix: my-app-helm-chart- # (optional) Custom tag prefix for version extraction (default: {chart_name}-helm-chart-)
+      # runs-on: '["self-hosted", "ubuntu-22.04"]' # (optional) Runner labels (default: self-hosted ubuntu-22.04)
+    secrets: inherit # Passes all secrets to the reusable workflow
+    # Or specify secrets explicitly:
+    # secrets:
+    #   HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }} # (required) Harbor registry username
+    #   HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }} # (required) Harbor registry password

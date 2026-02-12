@@ -1,0 +1,18 @@
+name: Helm Chart Lint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'chart/**'
+      - '.github/workflows/helm-lint.yml'
+
+jobs:
+  lint:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-helm-lint.yml@main
+    with:
+      chart_path: chart # (required) Path to Helm chart directory
+      # helm_version: v3.12.0 # (optional) Helm version to use (default: v3.12.0)
+      # chart_name: my-app # (optional) Chart name for templating (auto-detected from directory if not provided)
+      # values_file: chart/values-custom.yaml # (optional) Custom values file for templating validation
+      # runs-on: '["self-hosted", "ubuntu-22.04"]' # (optional) Runner labels (default: self-hosted ubuntu-22.04)

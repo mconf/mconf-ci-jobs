@@ -6,14 +6,31 @@ Reusable GitHub Actions workflows for CI/CD pipelines across Mconf projects.
 
 This repository provides a centralized collection of reusable GitHub Actions workflows for building, testing, linting, and deploying applications across multiple programming languages and platforms. All workflows are optimized for self-hosted runners and follow security best practices.
 
+## Development Guidelines
+
+Company-wide development practices and standards are documented in the [guidelines/](guidelines/) directory. These guidelines provide:
+
+- **AI Collaboration** - Best practices for working with AI coding tools
+- **General Development** - Language-agnostic practices (linting, Makefiles, pre-commit hooks)
+- **Language-Specific** - Guidelines for Ruby, Python, Go, and JavaScript
+- **Docker** - Container best practices and multi-stage builds
+- **Testing** - Testing strategies and AI-assisted test generation
+- **Git Workflow** - Commit messages, branching, and pull requests
+
+**Templates:** The [templates/](templates/) directory contains starter configurations (Makefile, AGENTS.md, linter configs, Docker examples) that you can copy to your projects.
+
+See [guidelines/README.md](guidelines/README.md) for a complete index.
+
 ## Workflow Comparison
 
 | Workflow | Action | Language/Tool | Registry | Security | Coverage | Private Repos | AI | Key Features |
 |----------|--------|---------------|----------|----------|----------|---------------|----|--------------|
 | **all-build-push-image** | Build+Push | Docker | Harbor | | | | | Multi-platform, metadata extraction, GHA+registry caching |
-| **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Auto-detect push/scan, SSH support, Trivy Explorer upload |
+| **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Auto-detect push/scan, SSH support, Trivy Explorer upload, custom context/target |
 | **all-create-tag** | Release | Git | | | | | | Version validation, annotated tags |
 | **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
+| **all-helm-lint** | Lint | Helm | | | | | | Chart validation, templating, packaging test |
+| **all-helm-publish** | Publish | Helm | Harbor | | | | | OCI registry push, version extraction, GitHub summary |
 | **data-py-uv-lint** | Lint | Python, Flake8, Black, isort, uv | | | | | | uv-based dependency management |
 | **data-py-uv-tests** | Test | Python, pytest, uv | | | ✓ | | | uv-based dependency management, configurable pytest markers |
 | **lb-go-build** | Build | Go | | | | ✓ | | CGO, private modules, build-essential |
@@ -102,7 +119,7 @@ This repository provides a centralized collection of reusable GitHub Actions wor
   Builds and pushes Docker images to Harbor with automatic tagging and caching. Supports multi-platform builds and optional DockerHub login for base images.
   **Usage:** See [`examples/all-build-push-image.yml`](examples/all-build-push-image.yml)
 * `all-build-push-scan-harbor.yml`
-  Builds, pushes Docker images to Harbor, and scans with Trivy. Includes auto-detection for push and scan based on git refs and available secrets. Supports SSH for private dependencies.
+  Builds, pushes Docker images to Harbor, and scans with Trivy. Includes auto-detection for push and scan based on git refs and available secrets. Supports SSH for private dependencies, custom build context and multi-stage targets.
   **Usage:** See [`examples/all-build-push-scan-harbor.yml`](examples/all-build-push-scan-harbor.yml)
 * `lb-scan.yml`
   Scans repository filesystem for security vulnerabilities using Trivy. Requires `pull-requests: write` permission.
@@ -110,6 +127,15 @@ This repository provides a centralized collection of reusable GitHub Actions wor
 * `lb-push-scan-image.yml`
   Builds Docker image, pushes to registry (on tags), and scans with Trivy. Includes optional SSH support for private dependencies.
   **Usage:** See [`examples/lb-push-scan-image.yml`](examples/lb-push-scan-image.yml)
+
+### Helm Workflows
+
+* `all-helm-lint.yml`
+  Lints, templates, and validates Helm charts. Auto-detects chart name and supports custom values files.
+  **Usage:** See [`examples/all-helm-lint.yml`](examples/all-helm-lint.yml)
+* `all-helm-publish.yml`
+  Packages and publishes Helm charts to Harbor OCI registry. Includes version extraction from tags and GitHub summary with install command.
+  **Usage:** See [`examples/all-helm-publish.yml`](examples/all-helm-publish.yml)
 
 ### Release & Changelog Workflows
 

@@ -1,0 +1,79 @@
+name: Helm Chart Lint
+
+on:
+  workflow_call:
+    inputs:
+      chart_path:
+        description: 'Path to Helm chart directory'
+        required: true
+        type: string
+      helm_version:
+        description: 'Helm version to use'
+        required: false
+        type: string
+        default: 'v3.12.0'
+      chart_name:
+        description: 'Chart name for templating (defaults to chart directory name)'
+        required: false
+        type: string
+        default: ''
+      values_file:
+        description: 'Path to values file for templating validation'
+        required: false
+        type: string
+        default: ''
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint Helm Chart
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ inputs.helm_version }}
+
+      - name: Lint chart
+        run: |
+          echo "🔍 Linting Helm chart at ${{ inputs.chart_path }}..."
+          helm lint ${{ inputs.chart_path }}
+          echo "✅ Chart linting passed"
+
+      - name: Template chart
+        run: |
+          # Determine chart name (from input or extract from directory)
+          CHART_NAME="${{ inputs.chart_name }}"
+          if [ -z "$CHART_NAME" ]; then
+            CHART_NAME=$(basename ${{ inputs.chart_path }})
+          fi
+
+          echo "📋 Templating chart '$CHART_NAME' with default values..."
+
+          # Use custom values file if provided, otherwise use default
+          VALUES_FLAG=""
+          if [ -n "${{ inputs.values_file }}" ]; then
+            VALUES_FLAG="--values ${{ inputs.values_file }}"
+          elif [ -f "${{ inputs.chart_path }}/values.yaml" ]; then
+            VALUES_FLAG="--values ${{ inputs.chart_path }}/values.yaml"
+          fi
+
+          helm template "$CHART_NAME" ${{ inputs.chart_path }} $VALUES_FLAG
+          echo "✅ Chart templating passed"
+
+      - name: Package chart (validation only)
+        run: |
+          echo "📦 Packaging chart for validation..."
+          helm package ${{ inputs.chart_path }}
+          ls -la *.tgz
+          echo "✅ Chart packaging successful"
