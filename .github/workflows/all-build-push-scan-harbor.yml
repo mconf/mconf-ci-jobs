@@ -13,8 +13,9 @@ on:
         type: string
       registry:
         description: 'Docker registry URL'
-        required: true
+        required: false
         type: string
+        default: 'registry.mconf.com'
       dockerfile_path:
         description: 'Path to Dockerfile'
         required: false
@@ -27,6 +28,16 @@ on:
         default: 'linux/amd64'
       build-args:
         description: 'Build arguments for Docker build'
+        type: string
+        required: false
+        default: ''
+      context_path:
+        description: 'Path to build context directory'
+        type: string
+        required: false
+        default: '.'
+      build_target:
+        description: 'Docker build target stage for multi-stage builds'
         type: string
         required: false
         default: ''
@@ -77,6 +88,9 @@ jobs:
     name: Build, Push and Scan Docker
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 30
+    outputs:
+      image_digest: ${{ steps.build.outputs.digest }}
+      image_tags: ${{ steps.meta.outputs.tags }}
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
@@ -138,8 +152,9 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ inputs.context_path }}
           file: ${{ inputs.dockerfile_path }}
+          target: ${{ inputs.build_target }}
           ssh: ${{ env.SSH_PRIVATE_KEY != '' && format('default={0}', env.SSH_AUTH_SOCK) || '' }}
           push: ${{ env.PUSH_ENABLED == 'true' }}
           load: ${{ env.SCAN_ENABLED == 'true' }}
