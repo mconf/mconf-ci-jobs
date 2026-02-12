@@ -79,10 +79,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: docker-build-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   build-push-scan:
     name: Build, Push and Scan Docker
