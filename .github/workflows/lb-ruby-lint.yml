@@ -6,6 +6,10 @@ on:
       ruby-version:
         type: string
         required: true
+      extra-packages:
+        type: string
+        required: false
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -19,7 +23,7 @@ jobs:
     - name: Install Tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential patch ruby-dev zlib1g-dev liblzma-dev libgmp-dev libpq-dev libsqlite3-dev
+        sudo apt-get install -y build-essential patch ruby-dev zlib1g-dev liblzma-dev libgmp-dev libpq-dev libsqlite3-dev ${{ inputs.extra-packages }}
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
