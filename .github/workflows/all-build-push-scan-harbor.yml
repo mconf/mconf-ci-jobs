@@ -184,11 +184,18 @@ jobs:
         id: generate-uuid
         run: echo "UUID=$(cat /proc/sys/kernel/random/uuid)" >> "$GITHUB_ENV"
 
+      - name: Get SHA image tag for scanning
+        if: env.SCAN_ENABLED == 'true'
+        id: sha-tag
+        run: |
+          SHA_TAG=$(echo "${{ steps.meta.outputs.tags }}" | grep ":sha-" | head -1)
+          echo "value=$SHA_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Run Trivy on Docker Image
         if: env.SCAN_ENABLED == 'true'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}:${{ github.ref_name }}
+          image-ref: ${{ steps.sha-tag.outputs.value }}
           ignore-unfixed: true
           format: "json"
           output: "/tmp/${{ env.UUID }}.json"
