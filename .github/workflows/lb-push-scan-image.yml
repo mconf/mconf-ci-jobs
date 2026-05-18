@@ -16,6 +16,10 @@ on:
         type: string
         required: false
         default: '["self-hosted", "ubuntu-22.04"]'
+      trivy-debug:
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -25,6 +29,8 @@ jobs:
     name: Build, Push and Scan Docker
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 30
+    env:
+      TRIVY_DEBUG: ${{ inputs.trivy-debug }}
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6

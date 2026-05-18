@@ -9,5 +9,7 @@ on:
 jobs:
   scan:
     uses: mconf/mconf-ci-jobs/.github/workflows/lb-scan.yml@main
+    # with:
+    #   trivy-debug: false # (optional) Enable Trivy debug output to diagnose slow or failing scans (default: false)
     secrets: inherit
 

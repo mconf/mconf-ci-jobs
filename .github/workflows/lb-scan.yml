@@ -2,6 +2,11 @@ name: Run trivy on filesystem
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      trivy-debug:
+        type: boolean
+        required: false
+        default: false
 permissions:
   contents: read
   pull-requests: write
@@ -10,6 +15,8 @@ jobs:
     name: Run trivy check
     runs-on: [self-hosted, ubuntu-22.04]
     timeout-minutes: 15
+    env:
+      TRIVY_DEBUG: ${{ inputs.trivy-debug }}
 
     steps:
       - uses: actions/checkout@v6
