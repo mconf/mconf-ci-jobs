@@ -19,7 +19,7 @@ on:
       trivy-debug:
         type: boolean
         required: false
-        default: false
+        default: true
 
 permissions:
   contents: read
@@ -107,6 +107,7 @@ jobs:
           format: "json"
           output: "/tmp/${{ env.UUID }}.json"
           severity: "CRITICAL,HIGH"
+          timeout: "10m"
 
       - name: Upload Trivy results to Trivy Explorer
         id: upload_trivy

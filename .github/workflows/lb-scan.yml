@@ -6,7 +6,7 @@ on:
       trivy-debug:
         type: boolean
         required: false
-        default: false
+        default: true
 permissions:
   contents: read
   pull-requests: write
@@ -28,6 +28,7 @@ jobs:
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
+          timeout: "10m"
 
       - name: Post Security Findings to Pull Request
         if: github.event_name == 'pull_request'

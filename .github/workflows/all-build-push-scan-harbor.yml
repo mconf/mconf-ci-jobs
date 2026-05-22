@@ -57,7 +57,7 @@ on:
         description: 'Enable Trivy debug output'
         type: boolean
         required: false
-        default: false
+        default: true
     secrets:
       HARBOR_USERNAME:
         description: 'Harbor registry username'
@@ -208,6 +208,7 @@ jobs:
           format: "json"
           output: "/tmp/${{ env.UUID }}.json"
           severity: "CRITICAL,HIGH"
+          timeout: "10m"
 
       - name: Upload Trivy results to Trivy Explorer
         if: env.SCAN_ENABLED == 'true'
