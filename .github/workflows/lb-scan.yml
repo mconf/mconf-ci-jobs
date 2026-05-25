@@ -1,6 +1,11 @@
 name: Run trivy on filesystem
 on:
   workflow_dispatch:
+    inputs:
+      trivy-debug:
+        type: boolean
+        required: false
+        default: true
   workflow_call:
     inputs:
       trivy-debug:
@@ -21,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "fs"
           ignore-unfixed: true

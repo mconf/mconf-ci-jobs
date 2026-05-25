@@ -2,6 +2,15 @@ name: Push new tag
 
 on:
   workflow_dispatch:
+    inputs:
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+      trivy-debug:
+        type: boolean
+        required: false
+        default: true
   workflow_call:
     inputs:
       build-args:
@@ -100,7 +109,7 @@ jobs:
         run: echo "UUID=$(cat /proc/sys/kernel/random/uuid)" >> "$GITHUB_ENV"
 
       - name: Run Trivy on Docker Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.tag.outputs.IMAGE }}
           ignore-unfixed: true
