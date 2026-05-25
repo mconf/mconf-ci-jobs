@@ -53,6 +53,11 @@ on:
         type: string
         required: false
         default: '["self-hosted", "ubuntu-22.04"]'
+      trivy-debug:
+        description: 'Enable Trivy debug output'
+        type: boolean
+        required: false
+        default: true
     secrets:
       HARBOR_USERNAME:
         description: 'Harbor registry username'
@@ -97,6 +102,7 @@ jobs:
       PUSH_ENABLED: ${{ inputs.push_enabled != '' && inputs.push_enabled || startsWith(github.ref, 'refs/tags/') }}
       # Auto-detect scan: enabled if Trivy secrets are present (unless explicitly disabled)
       SCAN_ENABLED: ${{ inputs.scan_enabled != '' && inputs.scan_enabled || (secrets.TRIVY_EXPLORER_URL != '' && secrets.TRIVY_EXPLORER_AUTH_TOKEN != '') }}
+      TRIVY_DEBUG: ${{ inputs.trivy-debug }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -195,13 +201,14 @@ jobs:
 
       - name: Run Trivy on Docker Image
         if: env.SCAN_ENABLED == 'true'
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.sha-tag.outputs.value }}
           ignore-unfixed: true
           format: "json"
           output: "/tmp/${{ env.UUID }}.json"
           severity: "CRITICAL,HIGH"
+          timeout: "10m"
 
       - name: Upload Trivy results to Trivy Explorer
         if: env.SCAN_ENABLED == 'true'

@@ -12,6 +12,7 @@ jobs:
     # build-args: Additional Docker build arguments
     # image-suffix: Suffix to append to the image tag
     # runs-on: Custom runner configuration (JSON array format)
+    # trivy-debug: true # Enable Trivy debug output to diagnose slow or failing scans (default: true)
     secrets: inherit
     # Required secrets:
     # REGISTRY_ACCESS_TOKEN: DockerHub access token

@@ -2,6 +2,15 @@ name: Push new tag
 
 on:
   workflow_dispatch:
+    inputs:
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+      trivy-debug:
+        type: boolean
+        required: false
+        default: true
   workflow_call:
     inputs:
       build-args:
@@ -16,6 +25,10 @@ on:
         type: string
         required: false
         default: '["self-hosted", "ubuntu-22.04"]'
+      trivy-debug:
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   contents: read
@@ -25,6 +38,8 @@ jobs:
     name: Build, Push and Scan Docker
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 30
+    env:
+      TRIVY_DEBUG: ${{ inputs.trivy-debug }}
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
@@ -94,13 +109,14 @@ jobs:
         run: echo "UUID=$(cat /proc/sys/kernel/random/uuid)" >> "$GITHUB_ENV"
 
       - name: Run Trivy on Docker Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.tag.outputs.IMAGE }}
           ignore-unfixed: true
           format: "json"
           output: "/tmp/${{ env.UUID }}.json"
           severity: "CRITICAL,HIGH"
+          timeout: "10m"
 
       - name: Upload Trivy results to Trivy Explorer
         id: upload_trivy
