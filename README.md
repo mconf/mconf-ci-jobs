@@ -31,6 +31,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
 | **all-helm-lint** | Lint | Helm | | | | | | Chart validation, templating, packaging test |
 | **all-helm-publish** | Publish | Helm | Harbor | | | | | OCI registry push, version extraction, GitHub summary |
+| **all-trufflehog** | Scan | TruffleHog | | ✓ | | | | Git history secret scan, verified+unknown results |
 | **data-py-uv-lint** | Lint | Python, Flake8, Black, isort, uv | | | | | | uv-based dependency management |
 | **data-py-uv-tests** | Test | Python, pytest, uv | | | ✓ | | | uv-based dependency management, configurable pytest markers |
 | **lb-go-build** | Build | Go | | | | ✓ | | CGO, private modules, build-essential |
@@ -121,6 +122,9 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 * `all-build-push-scan-harbor.yml`
   Builds, pushes Docker images to Harbor, and scans with Trivy. Includes auto-detection for push and scan based on git refs and available secrets. Supports SSH for private dependencies, custom build context and multi-stage targets.
   **Usage:** See [`examples/all-build-push-scan-harbor.yml`](examples/all-build-push-scan-harbor.yml)
+* `all-trufflehog.yml`
+  Scans git history for leaked secrets and credentials using TruffleHog. Reports verified and unknown results. Requires full git history (`fetch-depth: 0`).
+  **Usage:** See [`examples/all-trufflehog.yml`](examples/all-trufflehog.yml)
 * `lb-scan.yml`
   Scans repository filesystem for security vulnerabilities using Trivy. Requires `pull-requests: write` permission.
   **Usage:** See [`examples/lb-scan.yml`](examples/lb-scan.yml)
