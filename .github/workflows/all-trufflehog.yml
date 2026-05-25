@@ -1,0 +1,33 @@
+name: Run TruffleHog Secret Scan
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-trufflehog
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  trufflehog:
+    name: TruffleHog Secret Scan
+    runs-on: ${{ fromJSON(inputs.runs-on || '["self-hosted", "ubuntu-22.04"]') }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@v3.95.3
+        with:
+          version: "3.95.3"
+          extra_args: --results=verified,unknown
