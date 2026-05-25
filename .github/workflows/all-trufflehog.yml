@@ -29,5 +29,5 @@ jobs:
       - name: TruffleHog Secret Scan
         uses: trufflesecurity/trufflehog@v3.95.3
         with:
-          version: "v3.95.3"
+          version: "3.95.3"
           extra_args: --results=verified,unknown
