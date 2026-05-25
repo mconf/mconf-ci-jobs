@@ -19,7 +19,7 @@ permissions:
 jobs:
   trufflehog:
     name: TruffleHog Secret Scan
-    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    runs-on: ${{ fromJSON(inputs.runs-on || '["self-hosted", "ubuntu-22.04"]') }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
