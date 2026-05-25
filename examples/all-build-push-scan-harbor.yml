@@ -23,6 +23,7 @@ jobs:
       # push_enabled: true # (optional) Force enable/disable push (default: auto-detect from tags)
       # scan_enabled: true # (optional) Force enable/disable scanning (default: auto-detect from secrets)
       # trivy-debug: true # (optional) Enable Trivy debug output to diagnose slow or failing scans (default: true)
+      # trivy-scanners: "vuln,config" # (optional) Comma-separated Trivy scanners to run — omit secret to skip secret scanning (default: uses Trivy built-in defaults)
     secrets: inherit # Passes all secrets to the reusable workflow
     # Or specify secrets explicitly:
     # secrets:
