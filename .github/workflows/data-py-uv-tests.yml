@@ -103,6 +103,10 @@ jobs:
           fi
       - name: Upload Coverage Report
         if: ${{ steps.changed-python-files.outputs.any_changed == 'true' && github.event_name == 'pull_request' }}
+        # Posting the PR comment needs a write token. Pull requests from forks
+        # only ever get a read-only GITHUB_TOKEN, so the comment POST 403s
+        # there — don't let that sink an otherwise-green test job.
+        continue-on-error: true
         uses: orgoro/coverage@v3.2
         with:
           coverageFile: ${{ inputs.working-directory }}/coverage.xml
