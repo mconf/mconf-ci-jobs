@@ -10,6 +10,7 @@ concurrency:
 
 jobs:
   test:
+    name: Ruby Tests
     runs-on: [self-hosted, ubuntu-22.04]
     services:
       mysql:

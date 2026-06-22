@@ -1,0 +1,14 @@
+name: Secret Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch: # allows triggering a full git history scan manually
+
+jobs:
+  scan_secrets:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-trufflehog.yml@main
+    # with:
+    #   runs-on: '["self-hosted", "ubuntu-22.04"]' # (optional) Runner to use (default: '["self-hosted", "ubuntu-22.04"]')
+    secrets: inherit

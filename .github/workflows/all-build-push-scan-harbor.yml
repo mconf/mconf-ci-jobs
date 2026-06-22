@@ -58,6 +58,11 @@ on:
         type: boolean
         required: false
         default: true
+      trivy-scanners:
+        description: 'Trivy scanners to run. Empty string uses Trivy built-in defaults.'
+        type: string
+        required: false
+        default: ''
     secrets:
       HARBOR_USERNAME:
         description: 'Harbor registry username'
@@ -209,6 +214,7 @@ jobs:
           output: "/tmp/${{ env.UUID }}.json"
           severity: "CRITICAL,HIGH"
           timeout: "10m"
+          scanners: ${{ inputs.trivy-scanners }}
 
       - name: Upload Trivy results to Trivy Explorer
         if: env.SCAN_ENABLED == 'true'
