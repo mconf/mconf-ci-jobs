@@ -26,8 +26,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure .trufflehogignore exists
+        run: touch .trufflehogignore
+
       - name: TruffleHog Secret Scan
         uses: trufflesecurity/trufflehog@v3.95.3
         with:
           version: "3.95.3"
-          extra_args: --results=verified,unknown
+          extra_args: --results=verified,unknown --exclude-paths .trufflehogignore
