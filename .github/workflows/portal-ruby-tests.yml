@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   workflow_call:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-tests
   cancel-in-progress: true
@@ -57,6 +61,7 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
+          COVERAGE: "true"
           DATABASE_URL: mysql2://root@127.0.0.1:3306/mconf_web_test
           MCONF_REDIS_HOST: 127.0.0.1
           MCONF_LOG_LEVEL: fatal
@@ -78,3 +83,13 @@ jobs:
           MCONF_DEVISE_SECRET_KEY: ${{ secrets.DEVISE_SECRET_KEY }}
           DEVISE_SECRET_KEY: ${{ secrets.DEVISE_JWT_SECRET_KEY }}
         run: bin/rails db:prepare spec
+      - name: Upload Coverage Report
+        if: github.event_name == 'pull_request'
+        # Posting the PR comment needs a write token. Pull requests from forks
+        # only ever get a read-only GITHUB_TOKEN, so the comment POST 403s
+        # there — don't let that sink an otherwise-green test job.
+        continue-on-error: true
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: coverage/coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
