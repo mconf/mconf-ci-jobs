@@ -188,12 +188,16 @@ jobs:
 
       - name: Create prompt file for Claude
         id: prompt
+        env:
+          CURRENT_VERSION: ${{ steps.versions.outputs.current_version }}
+          PREV_VERSION: ${{ steps.versions.outputs.prev_version }}
+          PRS: ${{ steps.prs.outputs.prs }}
         run: |
           # Create focused prompt asking for TEXT OUTPUT ONLY
           cat > /tmp/changelog_prompt.md << PROMPT_EOF
           # Generate Changelog Entry
 
-          Generate a changelog entry for version **${{ steps.versions.outputs.current_version }}**.
+          Generate a changelog entry for version **$CURRENT_VERSION**.
 
           ## Existing Changelog
 
@@ -205,7 +209,7 @@ jobs:
 
           ## Commits
 
-          Here are all commits between ${{ steps.versions.outputs.prev_version }} and HEAD:
+          Here are all commits between $PREV_VERSION and HEAD:
 
           \`\`\`
           $(cat /tmp/commits.txt)
@@ -214,12 +218,12 @@ jobs:
           PROMPT_EOF
 
           # Add PR information if available
-          if [ -n "${{ steps.prs.outputs.prs }}" ]; then
+          if [ -n "$PRS" ]; then
             cat >> /tmp/changelog_prompt.md << PR_EOF
 
           ## Pull Request Information
 
-          $(echo "${{ steps.prs.outputs.prs }}" | tr ',' '\n')
+          $(echo "$PRS" | tr ',' '\n')
           PR_EOF
           fi
 
@@ -228,7 +232,7 @@ jobs:
 
           ## Task
 
-          Generate a new changelog section for version ${{ steps.versions.outputs.current_version }}.
+          Generate a new changelog section for version $CURRENT_VERSION.
 
           Match the existing changelog's style, format, language, and tone exactly. Look at how version headers and bullet points are formatted in the existing changelog above and follow that same pattern.
 
