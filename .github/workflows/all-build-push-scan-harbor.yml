@@ -79,7 +79,7 @@ on:
       SSH_PRIVATE_KEY:
         description: "SSH private key for accessing private repositories (optional)"
         required: false
-      EXTRA_SSH_PRIVATE_KEY:
+      PRODUCER_SSH_PRIVATE_KEY:
         description: "Additional SSH private key for a second private module (optional, e.g. mconf-rec-expirer-producer)"
         required: false
       TRIVY_EXPLORER_AUTH_TOKEN:
@@ -146,7 +146,7 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-            ${{ secrets.EXTRA_SSH_PRIVATE_KEY }}
+            ${{ secrets.PRODUCER_SSH_PRIVATE_KEY }}
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
