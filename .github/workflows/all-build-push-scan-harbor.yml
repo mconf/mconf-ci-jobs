@@ -4,49 +4,49 @@ on:
   workflow_call:
     inputs:
       image_name:
-        description: 'Name of the Docker image'
+        description: "Name of the Docker image"
         required: true
         type: string
       organization:
-        description: 'Harbor organization name'
+        description: "Harbor organization name"
         required: true
         type: string
       registry:
-        description: 'Docker registry URL'
+        description: "Docker registry URL"
         required: false
         type: string
-        default: 'registry.mconf.com'
+        default: "registry.mconf.com"
       dockerfile_path:
-        description: 'Path to Dockerfile'
+        description: "Path to Dockerfile"
         required: false
         type: string
-        default: './Dockerfile'
+        default: "./Dockerfile"
       platforms:
-        description: 'Target platforms for the build'
+        description: "Target platforms for the build"
         required: false
         type: string
-        default: 'linux/amd64'
+        default: "linux/amd64"
       build-args:
-        description: 'Build arguments for Docker build'
+        description: "Build arguments for Docker build"
         type: string
         required: false
-        default: ''
+        default: ""
       context_path:
-        description: 'Path to build context directory'
+        description: "Path to build context directory"
         type: string
         required: false
-        default: '.'
+        default: "."
       build_target:
-        description: 'Docker build target stage for multi-stage builds'
+        description: "Docker build target stage for multi-stage builds"
         type: string
         required: false
-        default: ''
+        default: ""
       push_enabled:
-        description: 'Enable pushing to registry (default: auto-detect tags)'
+        description: "Enable pushing to registry (default: auto-detect tags)"
         type: boolean
         required: false
       scan_enabled:
-        description: 'Enable Trivy scanning (default: auto-detect if secrets present)'
+        description: "Enable Trivy scanning (default: auto-detect if secrets present)"
         type: boolean
         required: false
       runs-on:
@@ -54,36 +54,39 @@ on:
         required: false
         default: '["self-hosted", "ubuntu-22.04"]'
       trivy-debug:
-        description: 'Enable Trivy debug output'
+        description: "Enable Trivy debug output"
         type: boolean
         required: false
         default: true
       trivy-scanners:
-        description: 'Trivy scanners to run. Empty string uses Trivy built-in defaults.'
+        description: "Trivy scanners to run. Empty string uses Trivy built-in defaults."
         type: string
         required: false
-        default: ''
+        default: ""
     secrets:
       HARBOR_USERNAME:
-        description: 'Harbor registry username'
+        description: "Harbor registry username"
         required: false
       HARBOR_PASSWORD:
-        description: 'Harbor registry password'
+        description: "Harbor registry password"
         required: false
       DOCKERHUB_USERNAME:
-        description: 'DockerHub username for login (optional)'
+        description: "DockerHub username for login (optional)"
         required: false
       DOCKERHUB_PASSWORD:
-        description: 'DockerHub password (required if DOCKERHUB_USERNAME is provided)'
+        description: "DockerHub password (required if DOCKERHUB_USERNAME is provided)"
         required: false
       SSH_PRIVATE_KEY:
-        description: 'SSH private key for accessing private repositories (optional)'
+        description: "SSH private key for accessing private repositories (optional)"
+        required: false
+      EXTRA_SSH_PRIVATE_KEY:
+        description: "Additional SSH private key for a second private module (optional, e.g. mconf-rec-expirer-producer)"
         required: false
       TRIVY_EXPLORER_AUTH_TOKEN:
-        description: 'Authentication token for Trivy Explorer'
+        description: "Authentication token for Trivy Explorer"
         required: false
       TRIVY_EXPLORER_URL:
-        description: 'URL for Trivy Explorer'
+        description: "URL for Trivy Explorer"
         required: false
 
 permissions:
@@ -141,8 +144,9 @@ jobs:
         if: ${{ env.SSH_PRIVATE_KEY != '' }}
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+            ${{ secrets.EXTRA_SSH_PRIVATE_KEY }}
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
