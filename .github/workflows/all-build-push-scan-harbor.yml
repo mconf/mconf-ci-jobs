@@ -96,7 +96,7 @@ jobs:
   build-push-scan:
     name: Build, Push and Scan Docker
     runs-on: ${{ fromJSON(inputs.runs-on) }}
-    timeout-minutes: 30
+    timeout-minutes: 45
     outputs:
       image_digest: ${{ steps.build.outputs.digest }}
       image_tags: ${{ steps.meta.outputs.tags }}
