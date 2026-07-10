@@ -63,6 +63,10 @@ on:
         type: string
         required: false
         default: ""
+      image-suffix:
+        type: string
+        required: false
+        default: ""
     secrets:
       HARBOR_USERNAME:
         description: "Harbor registry username"
@@ -151,7 +155,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}
+          images: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}${{ inputs.image-suffix }}
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
