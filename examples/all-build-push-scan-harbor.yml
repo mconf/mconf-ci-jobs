@@ -12,6 +12,7 @@ jobs:
     with:
       image_name: my-app # (required) Name of the Docker image
       organization: my-org # (required) Harbor organization name
+      tag-suffix: "" # (optional) Suffix to append to the image tag (default: "")
       # registry: registry.mconf.com # (optional) Docker registry URL (default: registry.mconf.com)
       # context_path: . # (optional) Build context directory (default: .)
       # dockerfile_path: './Dockerfile' # (optional) Path to Dockerfile (default: ./Dockerfile)
