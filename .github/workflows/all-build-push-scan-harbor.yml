@@ -67,6 +67,11 @@ on:
         type: string
         required: false
         default: ""
+      tag-suffix:
+        description: "Suffix to append to all generated image tags (e.g. -internal, -confweb)"
+        type: string
+        required: false
+        default: ""
     secrets:
       HARBOR_USERNAME:
         description: "Harbor registry username"
@@ -156,6 +161,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}${{ inputs.image-suffix }}
+          flavor: |
+            suffix=${{ inputs.tag-suffix }},onlatest=true
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
