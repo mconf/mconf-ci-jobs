@@ -8,7 +8,9 @@ on:
 jobs:
   test:
     uses: mconf/mconf-ci-jobs/.github/workflows/portal-ruby-tests.yml@main
-    # No inputs required - uses .ruby-version file from repository
+    # No inputs required - uses .ruby-version file from repository.
+    # Posts an octocov coverage comment on PRs (reads SimpleCov's coverage/.resultset.json).
+    # To customize coverage rules, commit a .octocov.yaml; the workflow provides a default otherwise.
     secrets: inherit
     # Required secrets:
     # DEVISE_PEPPER: Required for Devise authentication

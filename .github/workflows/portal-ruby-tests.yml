@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  actions: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-tests
@@ -83,13 +84,17 @@ jobs:
           MCONF_DEVISE_SECRET_KEY: ${{ secrets.DEVISE_SECRET_KEY }}
           DEVISE_SECRET_KEY: ${{ secrets.DEVISE_JWT_SECRET_KEY }}
         run: bin/rails db:prepare spec
-      - name: Upload Coverage Report
+      - name: Default octocov config
         if: github.event_name == 'pull_request'
-        # Posting the PR comment needs a write token. Pull requests from forks
-        # only ever get a read-only GITHUB_TOKEN, so the comment POST 403s
-        # there — don't let that sink an otherwise-green test job.
+        # Provide a sensible default; a repo can override by committing its own .octocov.yaml.
+        run: |
+          if [ ! -f .octocov.yml ] && [ ! -f .octocov.yaml ] && [ ! -f octocov.yml ] && [ ! -f octocov.yaml ]; then
+            printf 'coverage:\n  if: true\ncomment:\n  if: is_pull_request\n' > .octocov.yaml
+          fi
+      - name: Coverage report (octocov)
+        if: github.event_name == 'pull_request'
+        # Reads coverage/.resultset.json (SimpleCov, native) + .octocov.yaml (repo's own or the default above).
         continue-on-error: true
-        uses: orgoro/coverage@v3.2
-        with:
-          coverageFile: coverage/coverage.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: k1LoW/octocov-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

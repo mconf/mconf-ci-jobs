@@ -110,7 +110,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
   Scans Rails applications for security vulnerabilities using Brakeman. Reads Ruby version from `.ruby-version` file.
   **Usage:** See [`examples/portal-ruby-scan.yml`](examples/portal-ruby-scan.yml)
 * `portal-ruby-tests.yml`
-  Runs Rails tests with MySQL and Redis services, generates a SimpleCov coverage report (Cobertura) and posts it as a PR comment. Reads Ruby version from `.ruby-version` file. Requires OAuth and Devise secrets; the comment needs `pull-requests: write`, which the workflow already requests.
+  Runs Rails tests with MySQL and Redis services, generates a SimpleCov coverage report and posts it as a PR comment via octocov (reads `coverage/.resultset.json`). Reads Ruby version from `.ruby-version` file. Requires OAuth and Devise secrets. Coverage rules can be customized per repo with a `.octocov.yaml`; otherwise the workflow applies a default.
   **Usage:** See [`examples/portal-ruby-tests.yml`](examples/portal-ruby-tests.yml)
 
 
