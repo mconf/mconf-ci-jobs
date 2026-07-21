@@ -63,6 +63,16 @@ on:
         type: string
         required: false
         default: ""
+      gha_cache:
+        description: "Enable the GitHub Actions (type=gha) build cache."
+        type: boolean
+        required: false
+        default: true
+      registry_cache:
+        description: "Enable the Harbor registry (type=registry :buildcache) build cache."
+        type: boolean
+        required: false
+        default: true
       image-suffix:
         type: string
         required: false
@@ -186,11 +196,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: |
-            type=gha,scope=${{ inputs.image_name }}
-            type=registry,ref=${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}:buildcache,image-manifest=true
+            ${{ inputs.gha_cache && format('type=gha,scope={0}', inputs.image_name) || '' }}
+            ${{ inputs.registry_cache && format('type=registry,ref={0}/{1}/{2}:buildcache,image-manifest=true', inputs.registry, inputs.organization, inputs.image_name) || '' }}
           cache-to: |
-            type=gha,mode=max,scope=${{ inputs.image_name }},ignore-error=true
-            type=registry,ref=${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}:buildcache,mode=max,image-manifest=true,ignore-error=true
+            ${{ inputs.gha_cache && format('type=gha,mode=max,scope={0},ignore-error=true', inputs.image_name) || '' }}
+            ${{ inputs.registry_cache && format('type=registry,ref={0}/{1}/{2}:buildcache,mode=max,image-manifest=true,ignore-error=true', inputs.registry, inputs.organization, inputs.image_name) || '' }}
           platforms: ${{ inputs.platforms }}
           build-args: ${{ inputs.build-args }}
           provenance: false
