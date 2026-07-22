@@ -67,7 +67,7 @@ on:
         description: "Enable the GitHub Actions (type=gha) build cache."
         type: boolean
         required: false
-        default: true
+        default: false
       registry_cache:
         description: "Enable the Harbor registry (type=registry :buildcache) build cache."
         type: boolean
