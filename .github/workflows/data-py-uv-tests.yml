@@ -35,7 +35,7 @@ jobs:
   test-and-check-coverage:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     name: Test and Check Coverage
-    timeout-minutes: 15
+    timeout-minutes: 30
     # Service containers spun up for every run of this template — Postgres
     # (with pgvector) and Redis. Projects that don't need them get a small
     # bootstrap overhead but no extra config; projects that do (Abel, future
