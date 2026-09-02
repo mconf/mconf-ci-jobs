@@ -28,6 +28,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **all-build-push-image** | Build+Push | Docker | Harbor | | | | | Multi-platform, metadata extraction, GHA+registry caching |
 | **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Auto-detect push/scan, SSH support, Trivy Explorer upload, custom context/target |
 | **all-create-tag** | Release | Git | | | | | | Version validation, annotated tags |
+| **all-flux-validate** | Validate | Flux, Kustomize, kubeconform | | ✓ | | | | Renders like source-controller, apiVersion allowlist, kubeconform schema check, SOPS coverage both ways |
 | **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
 | **all-helm-lint** | Lint | Helm | | | | | | Chart validation, templating, packaging test |
 | **all-helm-publish** | Publish | Helm | Harbor | | | | | OCI registry push, version extraction, GitHub summary |
@@ -131,6 +132,12 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 * `lb-push-scan-image.yml`
   Builds Docker image, pushes to registry (on tags), and scans with Trivy. Includes optional SSH support for private dependencies.
   **Usage:** See [`examples/lb-push-scan-image.yml`](examples/lb-push-scan-image.yml)
+
+### Kubernetes Workflows
+
+* `all-flux-validate.yml`
+  Validates a Flux + Kustomize GitOps repository before it reaches main. Renders the repo the way source-controller does, checks every rendered `apiVersion` against an allowlist committed in the consuming repo, schema-validates the output with kubeconform, and asserts SOPS coverage in both directions (nothing unencrypted under `secrets/`, no `kind: Secret` outside it). The allowlist path, the secrets directory name and the tool versions are inputs.
+  **Usage:** See [`examples/all-flux-validate.yml`](examples/all-flux-validate.yml)
 
 ### Helm Workflows
 

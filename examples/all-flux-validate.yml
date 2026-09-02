@@ -1,0 +1,31 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-flux-validate.yml@main
+    # with:
+    #   kustomization_name: flux-system # (optional) Name of the Flux Kustomization to render (default: flux-system)
+    #   kustomization_file: ./flux-system/gotk-sync.yaml # (optional) Path to the YAML holding that Kustomization object (default: ./flux-system/gotk-sync.yaml)
+    #   path: ./ # (optional) Path the Kustomization reconciles, relative to the repo root (default: ./)
+    #   api_versions_file: .github/allowed-api-versions.txt # (optional) File listing every apiVersion the repo may render, one per line; set to '' to skip the check (default: .github/allowed-api-versions.txt)
+    #   secrets_dir: secrets # (optional) Directory name holding SOPS-encrypted files; set to '' to skip the check (default: secrets)
+    #   sops_exclude_regex: '(^|/)flux-system/' # (optional) Paths exempt from the SOPS check, as an extended regex (default: '(^|/)flux-system/')
+    #   flux_version: '2.9.3' # (optional) Flux CLI version, must match the Flux running in the cluster (default: 2.9.3)
+    #   kubeconform_version: '0.7.0' # (optional) kubeconform version (default: 0.7.0)
+    #   runs-on: '["self-hosted", "ubuntu-22.04"]' # (optional) Runner to use (default: '["self-hosted", "ubuntu-22.04"]')
+
+# The apiVersion allowlist is a file in the consuming repository, not content in
+# mconf-ci-jobs: it records what one cluster's API server actually serves, so it
+# has to land in the same PR as the manifest that needs a new entry. Put it under
+# .github/ -- source-controller strips that directory, so Flux never tries to
+# reconcile it. One apiVersion per line, '#' comments allowed:
+#
+#   # Confirm the cluster serves it (kubectl api-resources) before adding a line.
+#   apps/v1
+#   helm.toolkit.fluxcd.io/v2
+#   v1
