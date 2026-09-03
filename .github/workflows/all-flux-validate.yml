@@ -1,0 +1,171 @@
+name: Flux Manifest Validation
+
+on:
+  workflow_call:
+    inputs:
+      kustomization_name:
+        description: 'Name of the Flux Kustomization to render'
+        required: false
+        type: string
+        default: 'flux-system'
+      kustomization_file:
+        description: 'Path to the YAML holding that Kustomization object'
+        required: false
+        type: string
+        default: './flux-system/gotk-sync.yaml'
+      path:
+        description: 'Path the Kustomization reconciles, relative to the repo root'
+        required: false
+        type: string
+        default: './'
+      api_versions_file:
+        description: 'File listing every apiVersion the repo may render, one per line (empty disables the check)'
+        required: false
+        type: string
+        default: '.github/allowed-api-versions.txt'
+      secrets_dir:
+        description: 'Directory name that holds SOPS-encrypted files (empty disables the check)'
+        required: false
+        type: string
+        default: 'secrets'
+      sops_exclude_regex:
+        description: 'Paths exempt from the SOPS check, as an extended regex'
+        required: false
+        type: string
+        default: '(^|/)flux-system/'
+      flux_version:
+        description: 'Flux CLI version — must match the Flux running in the cluster'
+        required: false
+        type: string
+        default: '2.9.3'
+      kubeconform_version:
+        description: 'kubeconform version'
+        required: false
+        type: string
+        default: '0.7.0'
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-flux-validate
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Render and validate
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flux and kubeconform
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/bin"
+          curl -sSL "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_amd64.tar.gz" \
+            | tar -xz -C "${RUNNER_TEMP}/bin" flux
+          curl -sSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar -xz -C "${RUNNER_TEMP}/bin" kubeconform
+          echo "${RUNNER_TEMP}/bin" >> "${GITHUB_PATH}"
+        env:
+          FLUX_VERSION: ${{ inputs.flux_version }}
+          KUBECONFORM_VERSION: ${{ inputs.kubeconform_version }}
+
+      - name: Render the repo the way Flux will
+        run: |
+          set -euo pipefail
+          # git archive rather than a file copy: it carries only committed content,
+          # which is what Flux reconciles, and it needs nothing the runner may not
+          # have -- self-hosted runners have no rsync.
+          mkdir -p "${RUNNER_TEMP}/render"
+          git archive HEAD | tar -x -C "${RUNNER_TEMP}/render"
+          cd "${RUNNER_TEMP}/render"
+
+          # source-controller strips these before kustomize-controller sees them
+          # (ExcludeCI and ExcludeExtra in fluxcd/pkg/sourceignore). `flux build`
+          # run outside the cluster does not, and aborts on the ones that are not
+          # Kubernetes manifests.
+          rm -rf .github .circleci .travis.yml .gitlab-ci.yml appveyor.yml \
+            .drone.yml cloudbuild.yaml codeship-services.yml codeship-steps.yml
+          find . \( -name .goreleaser.yml -o -name .sops.yaml -o -name .flux.yaml \) -delete
+
+          flux build kustomization "${KUSTOMIZATION_NAME}" \
+            --path "${RENDER_PATH}" \
+            --kustomization-file "${KUSTOMIZATION_FILE}" \
+            --dry-run > "${RUNNER_TEMP}/rendered.yaml"
+          echo "rendered $(grep -c '^kind:' "${RUNNER_TEMP}/rendered.yaml") objects"
+        env:
+          KUSTOMIZATION_NAME: ${{ inputs.kustomization_name }}
+          KUSTOMIZATION_FILE: ${{ inputs.kustomization_file }}
+          RENDER_PATH: ${{ inputs.path }}
+
+      - name: Check apiVersions against the allowlist
+        if: inputs.api_versions_file != ''
+        run: |
+          set -euo pipefail
+          if [ ! -f "${ALLOWLIST}" ]; then
+            echo "::error::${ALLOWLIST} not found. Create it, or pass api_versions_file: '' to skip this check."
+            exit 1
+          fi
+          grep -hE '^apiVersion:' "${RUNNER_TEMP}/rendered.yaml" | awk '{print $2}' | sort -u > "${RUNNER_TEMP}/used.txt"
+          grep -vE '^[[:space:]]*(#|$)' "${ALLOWLIST}" | sort -u > "${RUNNER_TEMP}/allowed.txt"
+          unknown="$(comm -23 "${RUNNER_TEMP}/used.txt" "${RUNNER_TEMP}/allowed.txt")"
+          if [ -n "${unknown}" ]; then
+            echo "::error::apiVersion used but not in ${ALLOWLIST}:"
+            echo "${unknown}"
+            echo "Confirm the cluster serves it (kubectl api-resources) before adding it to the allowlist."
+            exit 1
+          fi
+          echo "all apiVersions allowed"
+        env:
+          ALLOWLIST: ${{ inputs.api_versions_file }}
+
+      - name: Validate manifests
+        run: |
+          set -euo pipefail
+          # -ignore-missing-schemas lets CRDs absent from the catalog through; the
+          # apiVersion allowlist above is what covers those.
+          kubeconform \
+            -summary \
+            -strict \
+            -ignore-missing-schemas \
+            -skip CustomResourceDefinition \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            "${RUNNER_TEMP}/rendered.yaml"
+
+      - name: Check SOPS coverage
+        if: inputs.secrets_dir != ''
+        run: |
+          set -euo pipefail
+          fail=0
+          # SOPS covers the secrets directory only because a file was put there.
+          # Nothing else stops a credential being committed, so assert both halves
+          # of the rule.
+          while IFS= read -r f; do
+            [ "$(basename "${f}")" = "kustomization.yaml" ] && continue
+            if ! grep -q '^sops:' "${f}"; then
+              echo "::error file=${f}::file under ${SECRETS_DIR}/ is not SOPS-encrypted"
+              fail=1
+            fi
+          done < <(git ls-files | grep -E "(^|/)${SECRETS_DIR}/.*\.ya?ml$" || true)
+
+          while IFS= read -r f; do
+            if grep -q '^kind: Secret' "${f}"; then
+              echo "::error file=${f}::kind: Secret outside ${SECRETS_DIR}/ -- it will not be encrypted"
+              fail=1
+            fi
+          done < <(git ls-files | grep -E '\.ya?ml$' | grep -vE "(^|/)${SECRETS_DIR}/" | grep -vE "${SOPS_EXCLUDE_REGEX}" || true)
+
+          if [ "${fail}" -ne 0 ]; then
+            exit 1
+          fi
+          echo "SOPS coverage ok"
+        env:
+          SECRETS_DIR: ${{ inputs.secrets_dir }}
+          SOPS_EXCLUDE_REGEX: ${{ inputs.sops_exclude_regex }}
