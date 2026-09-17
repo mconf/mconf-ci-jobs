@@ -37,7 +37,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **data-py-uv-tests** | Test | Python, pytest, uv | | | ✓ | | | uv-based dependency management, configurable pytest markers |
 | **lb-go-build** | Build | Go | | | | ✓ | | CGO, private modules, build-essential |
 | **lb-go-lint** | Lint | Go, golangci-lint | | | | ✓ | | 10min timeout, private module support |
-| **lb-go-tests** | Test | Go, Gocov | | | ✓ | ✓ | | Coverage XML, PR comments, file change detection |
+| **lb-go-tests** | Test | Go, Gocov | | | ✓ | ✓ | | Coverage XML, PR comments, file change detection, Docker Hub login for container-based tests |
 | **lb-node-build** | Build | Node.js, npm | | | | | | Custom env vars, npm cache |
 | **lb-node-lint** | Lint | Node.js, ESLint | | | | | | Multiple file extensions (.js/.jsx/.ts/.tsx) |
 | **lb-node-tests** | Test | Node.js, npm | | | | | | File change detection |
