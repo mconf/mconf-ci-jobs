@@ -1,0 +1,20 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  bandit:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-py-bandit.yml@main
+    with:
+      src-path: app # (required) Python package to scan, relative to working-directory
+      # working-directory: backend # (optional) Directory to run Bandit from (default: .)
+      # python-version: "3.12" # (optional) Python version used to run Bandit (default: 3.12)
+      # bandit-version: "1.8.6" # (optional) Bandit version to install (default: 1.8.6)
+      # severity-level: medium # (optional) Minimum severity that counts as a finding: low, medium, high (default: medium)
+      # confidence-level: medium # (optional) Minimum confidence that counts as a finding: low, medium, high (default: medium)
+      # exclude-paths: "./tests,./.venv" # (optional) Comma-separated paths excluded from the scan (default: ./tests,./.venv,./venv,./node_modules)
+      # config-file: pyproject.toml # (optional) Bandit config file; empty means none (default: "")
+      # fail-on-findings: true # (optional) Fail the build when Bandit reports a finding (default: true)
