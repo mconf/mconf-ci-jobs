@@ -1,0 +1,166 @@
+name: Run Bandit
+
+on:
+  workflow_call:
+    inputs:
+      src-path:
+        description: "Path to the Python package to scan, relative to working-directory"
+        type: string
+        required: true
+      working-directory:
+        description: "Directory to run Bandit from (useful for monorepos)"
+        type: string
+        required: false
+        default: "."
+      python-version:
+        description: "Python version used to run Bandit"
+        type: string
+        required: false
+        default: "3.12"
+      bandit-version:
+        description: "Bandit version to install. Pinned so a new release cannot fail an unrelated PR."
+        type: string
+        required: false
+        default: "1.8.6"
+      severity-level:
+        description: "Minimum severity that counts as a finding: low, medium or high"
+        type: string
+        required: false
+        default: "medium"
+      confidence-level:
+        description: "Minimum confidence that counts as a finding: low, medium or high"
+        type: string
+        required: false
+        default: "medium"
+      exclude-paths:
+        description: "Comma-separated paths excluded from the scan (tests usually trip B101 assert_used)"
+        type: string
+        required: false
+        default: "./tests,./.venv,./venv,./node_modules"
+      config-file:
+        description: "Bandit config file (e.g. .bandit or pyproject.toml). Empty means no config file."
+        type: string
+        required: false
+        default: ""
+      fail-on-findings:
+        description: "Fail the build when Bandit reports a finding at or above the configured levels"
+        type: boolean
+        required: false
+        default: true
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+
+permissions:
+  contents: read
+
+jobs:
+  bandit:
+    name: SAST Python (Bandit)
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 15
+    env:
+      SRC_PATH: ${{ inputs.src-path }}
+      SEVERITY_LEVEL: ${{ inputs.severity-level }}
+      CONFIDENCE_LEVEL: ${{ inputs.confidence-level }}
+      EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+      CONFIG_FILE: ${{ inputs.config-file }}
+    steps:
+      - name: Check out Source Repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install Bandit
+        # [toml] extra is what lets `config-file: pyproject.toml` be read.
+        run: pip install "bandit[toml]==${{ inputs.bandit-version }}"
+
+      - name: Run Bandit
+        id: bandit
+        working-directory: ${{ inputs.working-directory }}
+        # Exit code is the finding signal (0 none, 1 findings, 2 error); captured
+        # so the summary and artifact upload still run before the job fails.
+        run: |
+          args=(-r "$SRC_PATH" --severity-level "$SEVERITY_LEVEL" --confidence-level "$CONFIDENCE_LEVEL")
+          if [ -n "$EXCLUDE_PATHS" ]; then
+            args+=(--exclude "$EXCLUDE_PATHS")
+          fi
+          if [ -n "$CONFIG_FILE" ]; then
+            args+=(-c "$CONFIG_FILE")
+          fi
+          echo "Running: bandit ${args[*]}"
+
+          set +e
+          bandit "${args[@]}" -f json -o bandit-report.json
+          bandit "${args[@]}" -f screen | tee bandit-report.txt
+          code=${PIPESTATUS[0]}
+          set -e
+
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "Bandit exit code: $code"
+
+      - name: Summarize findings
+        if: always()
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          {
+            echo "## Bandit — SAST Python"
+            echo ""
+            echo "- Path: \`$SRC_PATH\`"
+            echo "- Minimum severity: \`$SEVERITY_LEVEL\` · minimum confidence: \`$CONFIDENCE_LEVEL\`"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ ! -f bandit-report.json ]; then
+            echo "Bandit produced no report — it failed before scanning. See the step log." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          python3 <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+
+          with open("bandit-report.json") as fh:
+              results = json.load(fh).get("results", [])
+
+          if not results:
+              print("No findings at or above the configured levels.")
+          else:
+              print(f"**{len(results)} finding(s):**")
+              print()
+              print("| Severity | Confidence | Test | File:line |")
+              print("|---|---|---|---|")
+              for item in results:
+                  print(
+                      f"| {item['issue_severity']} | {item['issue_confidence']} "
+                      f"| {item['test_id']} {item['test_name']} "
+                      f"| `{item['filename']}:{item['line_number']}` |"
+                  )
+          PY
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: |
+            ${{ inputs.working-directory }}/bandit-report.json
+            ${{ inputs.working-directory }}/bandit-report.txt
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Fail on error
+        # 2 is Bandit failing to run, not a finding — never tolerated.
+        if: steps.bandit.outputs.exit_code == '2'
+        run: |
+          echo "::error::Bandit failed to run (exit code 2). See the step log."
+          exit 1
+
+      - name: Fail on findings
+        if: inputs.fail-on-findings && steps.bandit.outputs.exit_code == '1'
+        run: |
+          echo "::error::Bandit reported findings at or above $SEVERITY_LEVEL severity / $CONFIDENCE_LEVEL confidence. See the job summary and the bandit-report artifact."
+          exit 1
