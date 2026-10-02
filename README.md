@@ -26,7 +26,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | Workflow | Action | Language/Tool | Registry | Security | Coverage | Private Repos | AI | Key Features |
 |----------|--------|---------------|----------|----------|----------|---------------|----|--------------|
 | **all-build-push-image** | Build+Push | Docker | Harbor | | | | | Multi-platform, metadata extraction, GHA+registry caching |
-| **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Auto-detect push/scan, SSH support, Trivy Explorer upload, custom context/target |
+| **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Push on tags, opt-in Trivy scan, SSH support, Trivy Explorer upload, custom context/target |
 | **all-create-tag** | Release | Git | | | | | | Version validation, annotated tags |
 | **all-flux-validate** | Validate | Flux, Kustomize, kubeconform | | ✓ | | | | Renders like source-controller, apiVersion allowlist, kubeconform schema check, SOPS coverage both ways |
 | **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
@@ -44,7 +44,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **lb-py-lint** | Lint | Python, Flake8, Black, isort | | | | | | pip-based, libpq-dev |
 | **lb-py-pdm-lint** | Lint | Python, Flake8, Black, isort, PDM | | | | | | PDM-based dependency management |
 | **lb-py-tests** | Test | Python, pytest, PDM | | | ✓ | | | Coverage XML, PR reports, env file loading, file detection |
-| **lb-push-scan-image** | Build+Push+Scan | Docker, Trivy | DockerHub | ✓ | | ✓ | | Dynamic tagging, Trivy Explorer upload, job summary |
+| **lb-push-scan-image** | Build+Push+Scan | Docker, Trivy | DockerHub | ✓ | | ✓ | | Dynamic tagging, Trivy scan on tags (opt-in elsewhere), Trivy Explorer upload, job summary |
 | **lb-ruby-lint** | Lint | Ruby, RuboCop | | | | | | Build tools, libpq-dev, Gemfile caching |
 | **lb-scan** | Scan | Trivy | | ✓ | | | | Filesystem scan, SARIF to PR comments |
 | **portal-ruby-lint** | Lint | Ruby, RuboCop, HAML | | | | | | HAML views linting |
@@ -121,7 +121,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
   Builds and pushes Docker images to Harbor with automatic tagging and caching. Supports multi-platform builds and optional DockerHub login for base images.
   **Usage:** See [`examples/all-build-push-image.yml`](examples/all-build-push-image.yml)
 * `all-build-push-scan-harbor.yml`
-  Builds, pushes Docker images to Harbor, and scans with Trivy. Includes auto-detection for push and scan based on git refs and available secrets. Supports SSH for private dependencies, custom build context and multi-stage targets.
+  Builds and pushes Docker images to Harbor, pushing only on tag refs (`push_enabled: false` disables it). The Trivy scan is opt-in (`scan_enabled: true`, requires the Trivy Explorer secrets) because image scanning runs on push in Harbor. Supports SSH for private dependencies, custom build context and multi-stage targets.
   **Usage:** See [`examples/all-build-push-scan-harbor.yml`](examples/all-build-push-scan-harbor.yml)
 * `all-trufflehog.yml`
   Scans git history for leaked secrets and credentials using TruffleHog. Reports verified and unknown results. Requires full git history (`fetch-depth: 0`).
@@ -130,7 +130,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
   Scans repository filesystem for security vulnerabilities using Trivy. Requires `pull-requests: write` permission.
   **Usage:** See [`examples/lb-scan.yml`](examples/lb-scan.yml)
 * `lb-push-scan-image.yml`
-  Builds Docker image, pushes to registry (on tags), and scans with Trivy. Includes optional SSH support for private dependencies.
+  Builds Docker image and pushes to Docker Hub (on tags). Tag builds are always scanned with Trivy, since Harbor does not scan Docker Hub images; on other refs the scan is opt-in (`scan_enabled: true`). Includes optional SSH support for private dependencies.
   **Usage:** See [`examples/lb-push-scan-image.yml`](examples/lb-push-scan-image.yml)
 
 ### Kubernetes Workflows

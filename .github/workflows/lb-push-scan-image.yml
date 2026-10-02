@@ -7,6 +7,11 @@ on:
         type: string
         required: false
         default: '["self-hosted", "ubuntu-22.04"]'
+      scan_enabled:
+        description: "Run Trivy scan on non-tag refs. Tag refs are always scanned, since the image is pushed to Docker Hub, which Harbor does not scan."
+        type: boolean
+        required: false
+        default: false
       trivy-debug:
         type: boolean
         required: false
@@ -25,6 +30,11 @@ on:
         type: string
         required: false
         default: '["self-hosted", "ubuntu-22.04"]'
+      scan_enabled:
+        description: "Run Trivy scan on non-tag refs. Tag refs are always scanned, since the image is pushed to Docker Hub, which Harbor does not scan."
+        type: boolean
+        required: false
+        default: false
       trivy-debug:
         type: boolean
         required: false
@@ -40,6 +50,7 @@ jobs:
     timeout-minutes: 30
     env:
       TRIVY_DEBUG: ${{ inputs.trivy-debug }}
+      SCAN_ENABLED: ${{ inputs.scan_enabled || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Check out Source Repository
         uses: actions/checkout@v6
@@ -94,7 +105,7 @@ jobs:
         with:
           ssh: ${{ env.SSH_AUTH_SOCK != '' && format('default={0}', env.SSH_AUTH_SOCK) || '' }}
           push: ${{ startsWith(github.ref, 'refs/tags/') }}
-          load: true
+          load: ${{ env.SCAN_ENABLED == 'true' }}
           tags: ${{ steps.tag.outputs.IMAGE }}
           context: .
           platforms: linux/amd64
@@ -105,10 +116,12 @@ jobs:
             ${{ steps.meta.outputs.labels }}
 
       - name: Generate Unique Identifier
+        if: env.SCAN_ENABLED == 'true'
         id: generate-uuid
         run: echo "UUID=$(cat /proc/sys/kernel/random/uuid)" >> "$GITHUB_ENV"
 
       - name: Run Trivy on Docker Image
+        if: env.SCAN_ENABLED == 'true'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.tag.outputs.IMAGE }}
@@ -119,6 +132,7 @@ jobs:
           timeout: "10m"
 
       - name: Upload Trivy results to Trivy Explorer
+        if: env.SCAN_ENABLED == 'true'
         id: upload_trivy
         run: |
           RESPONSE=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${{secrets.TRIVY_EXPLORER_AUTH_TOKEN}}" --data "@/tmp/${{ env.UUID }}.json" ${{secrets.TRIVY_EXPLORER_URL}})
@@ -127,6 +141,7 @@ jobs:
           echo "report_url=$REPORT_URL" >> "$GITHUB_OUTPUT"
 
       - name: Add Report Link to Job Summary
+        if: env.SCAN_ENABLED == 'true'
         run: |
           echo "Trivy Scan Report" >> "$GITHUB_STEP_SUMMARY"
           echo "A new security scan report has been generated. You can view it here:" >> "$GITHUB_STEP_SUMMARY"
