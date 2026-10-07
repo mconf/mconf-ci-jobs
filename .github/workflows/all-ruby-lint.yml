@@ -1,0 +1,52 @@
+name: Run Ruby lint
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ruby-version:
+        description: 'Ruby version, or a file to read it from'
+        type: string
+        required: false
+        default: '.ruby-version'
+      extra-packages:
+        description: 'Extra apt packages needed to build the bundle'
+        type: string
+        required: false
+        default: ''
+      command:
+        description: 'RuboCop invocation. Override to use a binstub or extra flags'
+        type: string
+        required: false
+        default: 'bundle exec rubocop'
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: RuboCop
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v6
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+            build-essential git libpq-dev libyaml-dev pkg-config ${{ inputs.extra-packages }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+
+      - name: Lint Ruby code
+        run: ${{ inputs.command }}
