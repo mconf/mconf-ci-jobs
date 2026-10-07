@@ -1,0 +1,70 @@
+name: Run Node lint
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      node-version-file:
+        description: 'File to read the Node version from'
+        type: string
+        required: false
+        default: '.node-version'
+      install-command:
+        description: 'Dependency install invocation'
+        type: string
+        required: false
+        default: 'npm ci'
+      type-check-command:
+        description: 'Type checker invocation. Empty skips the step'
+        type: string
+        required: false
+        default: ''
+      lint-command:
+        description: 'ESLint invocation. Empty skips the step'
+        type: string
+        required: false
+        default: 'npm run lint'
+      format-check-command:
+        description: 'Formatter check invocation. Empty skips the step'
+        type: string
+        required: false
+        default: 'npx prettier --check .'
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: ESLint, Prettier and type check
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ${{ inputs.node-version-file }}
+          cache: npm
+
+      - name: Install dependencies
+        run: ${{ inputs.install-command }}
+
+      # Type checking is off by default: it only applies to TypeScript projects,
+      # and the script that runs it has no conventional name.
+      - name: Check types
+        if: inputs.type-check-command != ''
+        run: ${{ inputs.type-check-command }}
+
+      - name: Lint
+        if: inputs.lint-command != ''
+        run: ${{ inputs.lint-command }}
+
+      - name: Check formatting
+        if: inputs.format-check-command != ''
+        run: ${{ inputs.format-check-command }}

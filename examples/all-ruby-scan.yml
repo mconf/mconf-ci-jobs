@@ -1,0 +1,21 @@
+name: CI - Ruby scan
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  scan_ruby:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-ruby-scan.yml@main
+    with:
+      # ruby-version (optional): Ruby version, or a file to read it from (default: .ruby-version)
+      # ruby-version: '3.3.12'
+      # extra-packages (optional): extra apt packages needed to build the bundle (default: none)
+      # extra-packages: 'libvips'
+      # brakeman-command (optional): Brakeman invocation, empty skips the step (default: bundle exec brakeman --quiet --no-pager --exit-on-warn --exit-on-error)
+      brakeman-command: 'bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error'
+      # bundler-audit-command (optional): bundler-audit invocation, empty skips the step (default: bundle exec bundler-audit check --update)
+      bundler-audit-command: 'bin/bundler-audit'
+      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on: '["ubuntu-latest"]'
