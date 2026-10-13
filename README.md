@@ -32,6 +32,10 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
 | **all-helm-lint** | Lint | Helm | | | | | | Chart validation, templating, packaging test |
 | **all-helm-publish** | Publish | Helm | Harbor | | | | | OCI registry push, version extraction, GitHub summary |
+| **all-node-lint** | Lint | Node.js, ESLint, Prettier, tsc | | | | | | Optional type check, per-step command overrides, npm cache |
+| **all-node-scan** | Scan | Node.js, npm audit | | ✓ | | | | Reads the lockfile only, configurable severity threshold |
+| **all-ruby-lint** | Lint | Ruby, RuboCop | | | | | | Full RuboCop by default, command input for binstubs, libpq-dev |
+| **all-ruby-scan** | Scan | Ruby, Brakeman, bundler-audit | | ✓ | | | | Fails on Brakeman warnings by default, gem advisory audit |
 | **all-trufflehog** | Scan | TruffleHog | | ✓ | | | | Git history secret scan, verified+unknown results |
 | **data-py-uv-lint** | Lint | Python, Flake8, Black, isort, uv | | | | | | uv-based dependency management |
 | **data-py-uv-tests** | Test | Python, pytest, uv | | | ✓ | | | uv-based dependency management, configurable pytest markers |
@@ -67,6 +71,12 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 
 ### Node.js Workflows
 
+* `all-node-lint.yml`
+  Runs ESLint, a Prettier formatting check and an optional type check on JavaScript/TypeScript code. Each step takes a command input, so a repository points them at its own npm scripts; an empty command skips the step. Reads the Node version from `.node-version`.
+  **Usage:** See [`examples/all-node-lint.yml`](examples/all-node-lint.yml)
+* `all-node-scan.yml`
+  Audits npm dependencies against the advisory database with `npm audit`. Reads the lockfile, so nothing is installed. The severity that fails the job is an input.
+  **Usage:** See [`examples/all-node-scan.yml`](examples/all-node-scan.yml)
 * `lb-node-build.yml`
   Builds Node.js applications.
   **Usage:** See [`examples/lb-node-build.yml`](examples/lb-node-build.yml)
@@ -101,6 +111,12 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 
 ### Ruby Workflows
 
+* `all-ruby-lint.yml`
+  Runs RuboCop on Ruby code. Unlike `lb-ruby-lint.yml`, it runs the full set of cops rather than the `Lint` department alone, so the CI check matches what a local `make lint` enforces. The invocation is an input, so a repository can point it at its own binstub. Reads the Ruby version from `.ruby-version`.
+  **Usage:** See [`examples/all-ruby-lint.yml`](examples/all-ruby-lint.yml)
+* `all-ruby-scan.yml`
+  Scans Rails applications with Brakeman and audits gems with bundler-audit. The default Brakeman invocation carries `--exit-on-warn`, so a warning fails the job. Either step is skipped by passing an empty command. Reads the Ruby version from `.ruby-version`.
+  **Usage:** See [`examples/all-ruby-scan.yml`](examples/all-ruby-scan.yml)
 * `lb-ruby-lint.yml`
   Runs RuboCop linter on Ruby code.
   **Usage:** See [`examples/lb-ruby-lint.yml`](examples/lb-ruby-lint.yml)

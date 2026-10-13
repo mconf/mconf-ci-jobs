@@ -1,0 +1,64 @@
+name: Run Ruby scan
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ruby-version:
+        description: 'Ruby version, or a file to read it from'
+        type: string
+        required: false
+        default: '.ruby-version'
+      extra-packages:
+        description: 'Extra apt packages needed to build the bundle'
+        type: string
+        required: false
+        default: ''
+      brakeman-command:
+        description: 'Brakeman invocation. Empty skips the step'
+        type: string
+        required: false
+        default: 'bundle exec brakeman --quiet --no-pager --exit-on-warn --exit-on-error'
+      bundler-audit-command:
+        description: 'bundler-audit invocation. Empty skips the step'
+        type: string
+        required: false
+        default: 'bundle exec bundler-audit check --update'
+      runs-on:
+        type: string
+        required: false
+        default: '["self-hosted", "ubuntu-22.04"]'
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Brakeman and bundler-audit
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v6
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+            build-essential git libpq-dev libyaml-dev pkg-config tzdata ${{ inputs.extra-packages }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ inputs.ruby-version }}
+          bundler-cache: true
+
+      # Brakeman exits 0 on warnings unless told otherwise, so the default
+      # invocation carries --exit-on-warn: a scan that cannot fail is not a gate.
+      - name: Scan for Rails security vulnerabilities
+        if: inputs.brakeman-command != ''
+        run: ${{ inputs.brakeman-command }}
+
+      - name: Audit gems for known vulnerabilities
+        if: inputs.bundler-audit-command != ''
+        run: ${{ inputs.bundler-audit-command }}

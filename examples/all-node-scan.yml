@@ -1,0 +1,17 @@
+name: CI - Node scan
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  npm_audit:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-node-scan.yml@main
+    with:
+      # node-version-file (optional): file to read the Node version from (default: .node-version)
+      # node-version-file: '.nvmrc'
+      # audit-level (optional): lowest severity that fails the job (default: high)
+      # audit-level: 'critical'
+      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on: '["ubuntu-latest"]'
