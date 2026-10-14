@@ -34,6 +34,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **all-helm-publish** | Publish | Helm | Harbor | | | | | OCI registry push, version extraction, GitHub summary |
 | **all-node-lint** | Lint | Node.js, ESLint, Prettier, tsc | | | | | | Optional type check, per-step command overrides, npm cache |
 | **all-node-scan** | Scan | Node.js, npm audit | | ✓ | | | | Reads the lockfile only, configurable severity threshold |
+| **all-py-bandit** | Scan | Python, Bandit | | ✓ | | | | Configurable severity/confidence, JSON+screen report artifact, PR job summary |
 | **all-ruby-lint** | Lint | Ruby, RuboCop | | | | | | Full RuboCop by default, command input for binstubs, libpq-dev |
 | **all-ruby-scan** | Scan | Ruby, Brakeman, bundler-audit | | ✓ | | | | Fails on Brakeman warnings by default, gem advisory audit |
 | **all-trufflehog** | Scan | TruffleHog | | ✓ | | | | Git history secret scan, verified+unknown results |
@@ -139,6 +140,9 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 * `all-build-push-scan-harbor.yml`
   Builds and pushes Docker images to Harbor, pushing only on tag refs (`push_enabled: false` disables it). The Trivy scan is opt-in (`scan_enabled: true`, requires the Trivy Explorer secrets) because image scanning runs on push in Harbor. Supports SSH for private dependencies, custom build context and multi-stage targets.
   **Usage:** See [`examples/all-build-push-scan-harbor.yml`](examples/all-build-push-scan-harbor.yml)
+* `all-py-bandit.yml`
+  Runs Bandit (Python SAST) over a source tree and fails the build on findings at or above the configured severity and confidence. Publishes a JSON and screen report as an artifact and a findings table in the job summary.
+  **Usage:** See [`examples/all-py-bandit.yml`](examples/all-py-bandit.yml)
 * `all-trufflehog.yml`
   Scans git history for leaked secrets and credentials using TruffleHog. Reports verified and unknown results. Requires full git history (`fetch-depth: 0`).
   **Usage:** See [`examples/all-trufflehog.yml`](examples/all-trufflehog.yml)
