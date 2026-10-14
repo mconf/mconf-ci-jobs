@@ -21,8 +21,8 @@ jobs:
       # build-args: | # (optional) Build arguments
       #   ARG1=value1
       #   ARG2=value2
-      # push_enabled: true # (optional) Force enable/disable push (default: auto-detect from tags)
-      # scan_enabled: true # (optional) Force enable/disable scanning (default: auto-detect from secrets)
+      # push_enabled: false # (optional) Push on tag refs; false never pushes (default: true)
+      # scan_enabled: true # (optional) Run Trivy in CI; needs the Trivy Explorer secrets. Off by default because image scanning runs on push in Harbor (default: false)
       # trivy-debug: true # (optional) Enable Trivy debug output to diagnose slow or failing scans (default: true)
       # trivy-scanners: "vuln,config" # (optional) Comma-separated Trivy scanners to run — removing `secret` from the list disables secret scanning (default: uses Trivy built-in defaults)
     secrets: inherit # Passes all secrets to the reusable workflow

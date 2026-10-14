@@ -1,0 +1,23 @@
+name: CI - Node lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-node-lint.yml@main
+    with:
+      # node-version-file (optional): file to read the Node version from (default: .node-version)
+      # node-version-file: '.nvmrc'
+      # install-command (optional): dependency install invocation (default: npm ci)
+      # install-command: 'npm ci --ignore-scripts'
+      # type-check-command (optional): type checker invocation, empty skips the step (default: none)
+      type-check-command: 'npm run check'
+      # lint-command (optional): ESLint invocation, empty skips the step (default: npm run lint)
+      # lint-command: 'npm run lint'
+      # format-check-command (optional): formatter check invocation, empty skips the step (default: npx prettier --check .)
+      # format-check-command: 'npx prettier --check .'
+      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on: '["ubuntu-latest"]'

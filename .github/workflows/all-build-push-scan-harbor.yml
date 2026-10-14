@@ -42,13 +42,15 @@ on:
         required: false
         default: ""
       push_enabled:
-        description: "Enable pushing to registry (default: auto-detect tags)"
+        description: "Push to registry on tag refs. false never pushes."
         type: boolean
         required: false
+        default: true
       scan_enabled:
-        description: "Enable Trivy scanning (default: auto-detect if secrets present)"
+        description: "Run Trivy scan in CI (requires Trivy Explorer secrets). Image scanning runs on push in Harbor."
         type: boolean
         required: false
+        default: false
       runs-on:
         type: string
         required: false
@@ -125,10 +127,9 @@ jobs:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-      # Auto-detect push: enabled for tags, disabled otherwise (unless explicitly set)
-      PUSH_ENABLED: ${{ inputs.push_enabled != '' && inputs.push_enabled || startsWith(github.ref, 'refs/tags/') }}
-      # Auto-detect scan: enabled if Trivy secrets are present (unless explicitly disabled)
-      SCAN_ENABLED: ${{ inputs.scan_enabled != '' && inputs.scan_enabled || (secrets.TRIVY_EXPLORER_URL != '' && secrets.TRIVY_EXPLORER_AUTH_TOKEN != '') }}
+      PUSH_ENABLED: ${{ inputs.push_enabled && startsWith(github.ref, 'refs/tags/') }}
+      # The scan report is uploaded to Trivy Explorer, so it needs both secrets.
+      SCAN_ENABLED: ${{ inputs.scan_enabled && secrets.TRIVY_EXPLORER_URL != '' && secrets.TRIVY_EXPLORER_AUTH_TOKEN != '' }}
       TRIVY_DEBUG: ${{ inputs.trivy-debug }}
     steps:
       - name: Checkout code

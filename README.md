@@ -26,13 +26,17 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | Workflow | Action | Language/Tool | Registry | Security | Coverage | Private Repos | AI | Key Features |
 |----------|--------|---------------|----------|----------|----------|---------------|----|--------------|
 | **all-build-push-image** | Build+Push | Docker | Harbor | | | | | Multi-platform, metadata extraction, GHA+registry caching |
-| **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Auto-detect push/scan, SSH support, Trivy Explorer upload, custom context/target |
+| **all-build-push-scan-harbor** | Build+Push+Scan | Docker, Trivy | Harbor | ✓ | | ✓ | | Push on tags, opt-in Trivy scan, SSH support, Trivy Explorer upload, custom context/target |
 | **all-create-tag** | Release | Git | | | | | | Version validation, annotated tags |
 | **all-flux-validate** | Validate | Flux, Kustomize, kubeconform | | ✓ | | | | Renders like source-controller, apiVersion allowlist, kubeconform schema check, SOPS coverage both ways |
 | **all-gen-changelog-ai** | Release | Git, Claude | | | | | ✓ | PR info gathering, Notion integration, Claude Code |
 | **all-helm-lint** | Lint | Helm | | | | | | Chart validation, templating, packaging test |
 | **all-helm-publish** | Publish | Helm | Harbor | | | | | OCI registry push, version extraction, GitHub summary |
+| **all-node-lint** | Lint | Node.js, ESLint, Prettier, tsc | | | | | | Optional type check, per-step command overrides, npm cache |
+| **all-node-scan** | Scan | Node.js, npm audit | | ✓ | | | | Reads the lockfile only, configurable severity threshold |
 | **all-py-bandit** | Scan | Python, Bandit | | ✓ | | | | Configurable severity/confidence, JSON+screen report artifact, PR job summary |
+| **all-ruby-lint** | Lint | Ruby, RuboCop | | | | | | Full RuboCop by default, command input for binstubs, libpq-dev |
+| **all-ruby-scan** | Scan | Ruby, Brakeman, bundler-audit | | ✓ | | | | Fails on Brakeman warnings by default, gem advisory audit |
 | **all-trufflehog** | Scan | TruffleHog | | ✓ | | | | Git history secret scan, verified+unknown results |
 | **data-py-uv-lint** | Lint | Python, Flake8, Black, isort, uv | | | | | | uv-based dependency management |
 | **data-py-uv-tests** | Test | Python, pytest, uv | | | ✓ | | | uv-based dependency management, configurable pytest markers |
@@ -45,7 +49,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **lb-py-lint** | Lint | Python, Flake8, Black, isort | | | | | | pip-based, libpq-dev |
 | **lb-py-pdm-lint** | Lint | Python, Flake8, Black, isort, PDM | | | | | | PDM-based dependency management |
 | **lb-py-tests** | Test | Python, pytest, PDM | | | ✓ | | | Coverage XML, PR reports, env file loading, file detection |
-| **lb-push-scan-image** | Build+Push+Scan | Docker, Trivy | DockerHub | ✓ | | ✓ | | Dynamic tagging, Trivy Explorer upload, job summary |
+| **lb-push-scan-image** | Build+Push+Scan | Docker, Trivy | DockerHub | ✓ | | ✓ | | Dynamic tagging, Trivy scan on tags (opt-in elsewhere), Trivy Explorer upload, job summary |
 | **lb-ruby-lint** | Lint | Ruby, RuboCop | | | | | | Build tools, libpq-dev, Gemfile caching |
 | **lb-scan** | Scan | Trivy | | ✓ | | | | Filesystem scan, SARIF to PR comments |
 | **portal-ruby-lint** | Lint | Ruby, RuboCop, HAML | | | | | | HAML views linting |
@@ -68,6 +72,12 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 
 ### Node.js Workflows
 
+* `all-node-lint.yml`
+  Runs ESLint, a Prettier formatting check and an optional type check on JavaScript/TypeScript code. Each step takes a command input, so a repository points them at its own npm scripts; an empty command skips the step. Reads the Node version from `.node-version`.
+  **Usage:** See [`examples/all-node-lint.yml`](examples/all-node-lint.yml)
+* `all-node-scan.yml`
+  Audits npm dependencies against the advisory database with `npm audit`. Reads the lockfile, so nothing is installed. The severity that fails the job is an input.
+  **Usage:** See [`examples/all-node-scan.yml`](examples/all-node-scan.yml)
 * `lb-node-build.yml`
   Builds Node.js applications.
   **Usage:** See [`examples/lb-node-build.yml`](examples/lb-node-build.yml)
@@ -102,6 +112,12 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 
 ### Ruby Workflows
 
+* `all-ruby-lint.yml`
+  Runs RuboCop on Ruby code. Unlike `lb-ruby-lint.yml`, it runs the full set of cops rather than the `Lint` department alone, so the CI check matches what a local `make lint` enforces. The invocation is an input, so a repository can point it at its own binstub. Reads the Ruby version from `.ruby-version`.
+  **Usage:** See [`examples/all-ruby-lint.yml`](examples/all-ruby-lint.yml)
+* `all-ruby-scan.yml`
+  Scans Rails applications with Brakeman and audits gems with bundler-audit. The default Brakeman invocation carries `--exit-on-warn`, so a warning fails the job. Either step is skipped by passing an empty command. Reads the Ruby version from `.ruby-version`.
+  **Usage:** See [`examples/all-ruby-scan.yml`](examples/all-ruby-scan.yml)
 * `lb-ruby-lint.yml`
   Runs RuboCop linter on Ruby code.
   **Usage:** See [`examples/lb-ruby-lint.yml`](examples/lb-ruby-lint.yml)
@@ -122,7 +138,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
   Builds and pushes Docker images to Harbor with automatic tagging and caching. Supports multi-platform builds and optional DockerHub login for base images.
   **Usage:** See [`examples/all-build-push-image.yml`](examples/all-build-push-image.yml)
 * `all-build-push-scan-harbor.yml`
-  Builds, pushes Docker images to Harbor, and scans with Trivy. Includes auto-detection for push and scan based on git refs and available secrets. Supports SSH for private dependencies, custom build context and multi-stage targets.
+  Builds and pushes Docker images to Harbor, pushing only on tag refs (`push_enabled: false` disables it). The Trivy scan is opt-in (`scan_enabled: true`, requires the Trivy Explorer secrets) because image scanning runs on push in Harbor. Supports SSH for private dependencies, custom build context and multi-stage targets.
   **Usage:** See [`examples/all-build-push-scan-harbor.yml`](examples/all-build-push-scan-harbor.yml)
 * `all-py-bandit.yml`
   Runs Bandit (Python SAST) over a source tree and fails the build on findings at or above the configured severity and confidence. Publishes a JSON and screen report as an artifact and a findings table in the job summary.
@@ -134,7 +150,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
   Scans repository filesystem for security vulnerabilities using Trivy. Requires `pull-requests: write` permission.
   **Usage:** See [`examples/lb-scan.yml`](examples/lb-scan.yml)
 * `lb-push-scan-image.yml`
-  Builds Docker image, pushes to registry (on tags), and scans with Trivy. Includes optional SSH support for private dependencies.
+  Builds Docker image and pushes to Docker Hub (on tags). Tag builds are always scanned with Trivy, since Harbor does not scan Docker Hub images; on other refs the scan is opt-in (`scan_enabled: true`). Includes optional SSH support for private dependencies.
   **Usage:** See [`examples/lb-push-scan-image.yml`](examples/lb-push-scan-image.yml)
 
 ### Kubernetes Workflows

@@ -1,0 +1,19 @@
+name: CI - Ruby lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  rubocop:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-ruby-lint.yml@main
+    with:
+      # ruby-version (optional): Ruby version, or a file to read it from (default: .ruby-version)
+      # ruby-version: '3.3.12'
+      # extra-packages (optional): extra apt packages needed to build the bundle (default: none)
+      # extra-packages: 'libvips'
+      # command (optional): RuboCop invocation (default: bundle exec rubocop)
+      command: 'bin/rubocop'
+      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on: '["ubuntu-latest"]'
