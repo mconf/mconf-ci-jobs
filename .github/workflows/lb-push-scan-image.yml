@@ -6,7 +6,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
       scan_enabled:
         description: "Run Trivy scan on non-tag refs. Tag refs are always scanned, since the image is pushed to Docker Hub, which Harbor does not scan."
         type: boolean
@@ -29,7 +29,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
       scan_enabled:
         description: "Run Trivy scan on non-tag refs. Tag refs are always scanned, since the image is pushed to Docker Hub, which Harbor does not scan."
         type: boolean

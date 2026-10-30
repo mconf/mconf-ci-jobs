@@ -22,7 +22,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
       working-directory:
         description: 'Subdirectory containing the Python project (uv.lock, pyproject.toml). Defaults to repo root.'
         type: string

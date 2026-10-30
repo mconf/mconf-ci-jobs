@@ -46,7 +46,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-flux-validate

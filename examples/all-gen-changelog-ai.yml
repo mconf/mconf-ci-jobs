@@ -30,8 +30,8 @@ jobs:
       pr_branch_prefix: 'auto-changelog'
       # claude_model (optional): Claude model to use - haiku, sonnet, or opus (default: haiku)
       claude_model: 'haiku'
-      # runs-on (optional): JSON array of runner labels (default: ["self-hosted", "ubuntu-22.04"])
-      # runs-on: '["self-hosted", "ubuntu-22.04"]'
+      # runs-on (optional): JSON array of runner labels (default: ["self-hosted", "latest"])
+      # runs-on: '["self-hosted", "latest"]'
     secrets: inherit
     # Required secrets:
     # ANTHROPIC_API_KEY: Anthropic API key for Claude

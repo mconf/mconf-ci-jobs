@@ -38,7 +38,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
     secrets:
       HARBOR_USERNAME:
         description: 'Harbor registry username'

@@ -19,7 +19,7 @@ permissions:
   contents: read
 jobs:
   test-and-check-coverage:
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: [self-hosted, latest]
     name: Test and Check Coverage
     timeout-minutes: 15
     steps:

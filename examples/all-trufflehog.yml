@@ -10,5 +10,5 @@ jobs:
   scan_secrets:
     uses: mconf/mconf-ci-jobs/.github/workflows/all-trufflehog.yml@main
     # with:
-    #   runs-on: '["self-hosted", "ubuntu-22.04"]' # (optional) Runner to use (default: '["self-hosted", "ubuntu-22.04"]')
+    #   runs-on: '["self-hosted", "latest"]' # (optional) Runner to use (default: '["self-hosted", "latest"]')
     secrets: inherit

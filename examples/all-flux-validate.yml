@@ -17,7 +17,7 @@ jobs:
     #   sops_exclude_regex: '(^|/)flux-system/' # (optional) Paths exempt from the SOPS check, as an extended regex (default: '(^|/)flux-system/')
     #   flux_version: '2.9.3' # (optional) Flux CLI version, must match the Flux running in the cluster (default: 2.9.3)
     #   kubeconform_version: '0.7.0' # (optional) kubeconform version (default: 0.7.0)
-    #   runs-on: '["self-hosted", "ubuntu-22.04"]' # (optional) Runner to use (default: '["self-hosted", "ubuntu-22.04"]')
+    #   runs-on: '["self-hosted", "latest"]' # (optional) Runner to use (default: '["self-hosted", "latest"]')
 
 # The apiVersion allowlist is a file in the consuming repository, not content in
 # mconf-ci-jobs: it records what one cluster's API server actually serves, so it

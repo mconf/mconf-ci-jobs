@@ -13,5 +13,5 @@ jobs:
       # node-version-file: '.nvmrc'
       # audit-level (optional): lowest severity that fails the job (default: high)
       # audit-level: 'critical'
-      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on (optional): runner labels (default: ["self-hosted", "latest"])
       # runs-on: '["ubuntu-latest"]'

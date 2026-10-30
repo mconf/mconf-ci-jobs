@@ -16,7 +16,7 @@ jobs:
       # chart_repo: helm-charts # (optional) Helm chart repository name in Harbor (default: helm-charts)
       # helm_version: v3.12.0 # (optional) Helm version to use (default: v3.12.0)
       # tag_prefix: my-app-helm-chart- # (optional) Custom tag prefix for version extraction (default: {chart_name}-helm-chart-)
-      # runs-on: '["self-hosted", "ubuntu-22.04"]' # (optional) Runner labels (default: self-hosted ubuntu-22.04)
+      # runs-on: '["self-hosted", "latest"]' # (optional) Runner labels (default: self-hosted latest)
     secrets: inherit # Passes all secrets to the reusable workflow
     # Or specify secrets explicitly:
     # secrets:

@@ -15,7 +15,7 @@ permissions:
   contents: read
 jobs:
   format-and-lint:
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: [self-hosted, latest]
     name: Lint and Check Formatting
     timeout-minutes: 15
     steps:

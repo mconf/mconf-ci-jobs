@@ -15,5 +15,5 @@ jobs:
       # extra-packages: 'libvips'
       # command (optional): RuboCop invocation (default: bundle exec rubocop)
       command: 'bin/rubocop'
-      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on (optional): runner labels (default: ["self-hosted", "latest"])
       # runs-on: '["ubuntu-latest"]'

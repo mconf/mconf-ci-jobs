@@ -14,7 +14,7 @@ permissions:
 jobs:
   build:
     name: Run build
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: [self-hosted, latest]
     timeout-minutes: 15
     steps:
       - name: Check out Source Repository

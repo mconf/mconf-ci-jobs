@@ -17,5 +17,5 @@ jobs:
       brakeman-command: 'bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error'
       # bundler-audit-command (optional): bundler-audit invocation, empty skips the step (default: bundle exec bundler-audit check --update)
       bundler-audit-command: 'bin/bundler-audit'
-      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on (optional): runner labels (default: ["self-hosted", "latest"])
       # runs-on: '["ubuntu-latest"]'
