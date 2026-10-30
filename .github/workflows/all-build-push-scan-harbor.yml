@@ -54,7 +54,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
       trivy-debug:
         description: "Enable Trivy debug output"
         type: boolean

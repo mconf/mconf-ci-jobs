@@ -17,7 +17,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
 
 permissions:
   contents: read

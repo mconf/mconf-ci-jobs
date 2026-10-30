@@ -23,13 +23,13 @@ README.md           # Documentation index
 - **Minimal permissions**: Only grant what's strictly required (`contents: read`, `pull-requests: write`, etc.)
 - **Timeout limits**: All jobs must have `timeout-minutes` (15-30 minutes typical)
 - **Secret handling**: Never log secrets, use GitHub secrets for sensitive data
-- **Self-hosted runners**: Target `[self-hosted, ubuntu-22.04]` unless otherwise needed
+- **Self-hosted runners**: Target `[self-hosted, latest]` unless otherwise needed
 
 ### Workflow Design Patterns
 - **Reusability**: All workflows use `workflow_call` trigger
 - **Versioning**: Consumers reference by branch/tag (`@main`, `@v1.0.0`)
 - **Inputs**: Document all inputs with comments in example files
-- **Runner configuration**: Include a `runs-on` input parameter (type: string, default: `'["self-hosted", "ubuntu-22.04"]'`) and use `${{ fromJSON(inputs.runs-on) }}` in job definitions to allow consumers to override the runner
+- **Runner configuration**: Include a `runs-on` input parameter (type: string, default: `'["self-hosted", "latest"]'`) and use `${{ fromJSON(inputs.runs-on) }}` in job definitions to allow consumers to override the runner
 - **Dependencies**: Minimize dependencies and reuse across workflows. If one workflow uses a dependency, favor reusing it in others
 - **Dependency updates**: When updating a dependency in one workflow, review if others using it should be updated too
 - **SSH support**: Include optional SSH agent setup when `SSH_PRIVATE_KEY` secret exists

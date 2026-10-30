@@ -11,7 +11,7 @@ concurrency:
 jobs:
   scan_ruby:
     name: Brakeman Security Scan
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: [self-hosted, latest]
     steps:
       - name: Install packages
         run: |

@@ -19,5 +19,5 @@ jobs:
       # lint-command: 'npm run lint'
       # format-check-command (optional): formatter check invocation, empty skips the step (default: npx prettier --check .)
       # format-check-command: 'npx prettier --check .'
-      # runs-on (optional): runner labels (default: ["self-hosted", "ubuntu-22.04"])
+      # runs-on (optional): runner labels (default: ["self-hosted", "latest"])
       # runs-on: '["ubuntu-latest"]'

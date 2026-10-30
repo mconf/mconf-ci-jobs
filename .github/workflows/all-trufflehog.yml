@@ -7,7 +7,7 @@ on:
       runs-on:
         type: string
         required: false
-        default: '["self-hosted", "ubuntu-22.04"]'
+        default: '["self-hosted", "latest"]'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.repository }}-${{ github.ref }}-trufflehog
@@ -19,7 +19,7 @@ permissions:
 jobs:
   trufflehog:
     name: TruffleHog Secret Scan
-    runs-on: ${{ fromJSON(inputs.runs-on || '["self-hosted", "ubuntu-22.04"]') }}
+    runs-on: ${{ fromJSON(inputs.runs-on || '["self-hosted", "latest"]') }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

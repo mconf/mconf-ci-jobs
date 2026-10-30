@@ -18,7 +18,7 @@ permissions:
 jobs:
   trivy:
     name: Run trivy check
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: [self-hosted, latest]
     timeout-minutes: 15
     env:
       TRIVY_DEBUG: ${{ inputs.trivy-debug }}

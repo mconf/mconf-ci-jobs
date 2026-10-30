@@ -11,7 +11,7 @@ concurrency:
 jobs:
   lint:
     name: RuboCop
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: [self-hosted, latest]
     steps:
       - name: Install packages
         run: |

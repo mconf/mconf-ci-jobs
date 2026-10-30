@@ -16,7 +16,7 @@ concurrency:
 jobs:
   test:
     name: Ruby Tests
-    runs-on: [self-hosted, ubuntu-22.04]
+    runs-on: [self-hosted, latest]
     services:
       mysql:
         image: mysql:5.7
