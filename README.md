@@ -6,6 +6,16 @@ Reusable GitHub Actions workflows for CI/CD pipelines across Mconf projects.
 
 This repository provides a centralized collection of reusable GitHub Actions workflows for building, testing, linting, and deploying applications across multiple programming languages and platforms. All workflows are optimized for self-hosted runners and follow security best practices.
 
+## Runners
+
+Jobs run on the org's self-hosted runner, `[self-hosted, latest]`. Most workflows take a `runs-on` input with that default; the others have it fixed.
+
+- **Private repositories:** don't pass `runs-on`; the default is the right runner.
+- **Public repositories:** never use the self-hosted runner, since anyone can open a pull request that runs code on it. Pass `runs-on: '["ubuntu-latest"]'`; a workflow without the input can't be called from a public repository.
+- **Jobs outside these workflows** follow the same rule: `runs-on: [self-hosted, latest]` in private repositories.
+
+The `ubuntu-22.04` label is retired.
+
 ## Development Guidelines
 
 Company-wide development practices and standards are documented in the [guidelines/](guidelines/) directory. These guidelines provide:
