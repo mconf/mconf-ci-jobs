@@ -18,6 +18,8 @@ jobs:
     runs-on: [self-hosted, latest]
     timeout-minutes: 15
     steps:
+      - name: zizmor test, do not merge
+        uses: actions/checkout@v4
       - name: Check out Source Repository  # zizmor: ignore[artipacked]
         uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
