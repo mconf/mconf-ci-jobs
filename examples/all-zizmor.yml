@@ -1,0 +1,21 @@
+# Also add .github/zizmor.yml so the @main calls to mconf/* are not flagged:
+#
+#   rules:
+#     unpinned-uses:
+#       config:
+#         policies:
+#           "mconf/*": ref-pin
+#           "*": hash-pin
+name: Workflow Audit
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    uses: mconf/mconf-ci-jobs/.github/workflows/all-zizmor.yml@main
+    # with:
+    #   runs-on: '["self-hosted", "latest"]' # (optional) Runner to use (default: '["self-hosted", "latest"]')
