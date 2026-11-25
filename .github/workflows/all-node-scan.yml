@@ -28,14 +28,14 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 15
     steps:
-      - name: Check out source repository
-        uses: actions/checkout@v6
+      - name: Check out source repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6  # zizmor: ignore[unpinned-uses]
         with:
           node-version-file: ${{ inputs.node-version-file }}
 
       # `npm audit` reads the lockfile; the dependencies do not need installing.
       - name: Audit dependencies for known vulnerabilities
-        run: npm audit --audit-level=${{ inputs.audit-level }}
+        run: npm audit --audit-level=${{ inputs.audit-level }}  # zizmor: ignore[template-injection]

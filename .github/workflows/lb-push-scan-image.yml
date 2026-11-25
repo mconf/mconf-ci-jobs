@@ -52,21 +52,21 @@ jobs:
       TRIVY_DEBUG: ${{ inputs.trivy-debug }}
       SCAN_ENABLED: ${{ inputs.scan_enabled || startsWith(github.ref, 'refs/tags/') }}
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3  # zizmor: ignore[unpinned-uses]
 
       - name: Login to DockerHub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3  # zizmor: ignore[unpinned-uses]
         with:
           username: daileon
           password: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
 
       - name: Calculate Docker Tag
         id: tag
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           if [ "${{ github.event_name }}" == "pull_request" ]; then
           # Replace / with - to avoid conflict
             TAG=$(echo "${{ github.head_ref }}" | sed 's/\//-/g')
@@ -80,7 +80,7 @@ jobs:
 
       - name: Generate Docker Metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v5  # zizmor: ignore[unpinned-uses]
         with:
           images: ${{ steps.tag.outputs.IMAGE }}
 
@@ -94,14 +94,14 @@ jobs:
         if: ${{ env.ssh-private-key != '' }}
         env:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        uses: webfactory/ssh-agent@v0.5.4
+        uses: webfactory/ssh-agent@v0.5.4  # zizmor: ignore[unpinned-uses]
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
             ${{ secrets.PRODUCER_SSH_PRIVATE_KEY }}
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v6  # zizmor: ignore[unpinned-uses]
         with:
           ssh: ${{ env.SSH_AUTH_SOCK != '' && format('default={0}', env.SSH_AUTH_SOCK) || '' }}
           push: ${{ startsWith(github.ref, 'refs/tags/') }}
@@ -122,7 +122,7 @@ jobs:
 
       - name: Run Trivy on Docker Image
         if: env.SCAN_ENABLED == 'true'
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0  # zizmor: ignore[unpinned-uses]
         with:
           image-ref: ${{ steps.tag.outputs.IMAGE }}
           ignore-unfixed: true
@@ -134,7 +134,7 @@ jobs:
       - name: Upload Trivy results to Trivy Explorer
         if: env.SCAN_ENABLED == 'true'
         id: upload_trivy
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           RESPONSE=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${{secrets.TRIVY_EXPLORER_AUTH_TOKEN}}" --data "@/tmp/${{ env.UUID }}.json" ${{secrets.TRIVY_EXPLORER_URL}})
           echo "Response: $RESPONSE"
           REPORT_URL=$(echo "$RESPONSE" | jq -r '.url')
@@ -142,7 +142,7 @@ jobs:
 
       - name: Add Report Link to Job Summary
         if: env.SCAN_ENABLED == 'true'
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           echo "Trivy Scan Report" >> "$GITHUB_STEP_SUMMARY"
           echo "A new security scan report has been generated. You can view it here:" >> "$GITHUB_STEP_SUMMARY"
           echo "[View Detailed Report](${{ steps.upload_trivy.outputs.report_url }})" >> "$GITHUB_STEP_SUMMARY"

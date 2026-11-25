@@ -20,12 +20,12 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Get Modified Go Files
         id: changed-go-files
-        uses: tj-actions/changed-files@v47
+        uses: tj-actions/changed-files@v47  # zizmor: ignore[unpinned-uses]
         with:
           files: |
             **/*.go
@@ -34,7 +34,7 @@ jobs:
 
       - name: Set up Go
         if: steps.changed-go-files.outputs.any_changed == 'true'
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v6  # zizmor: ignore[unpinned-uses]
         with:
           go-version: ${{ inputs.go-version }}
           cache: true
@@ -49,7 +49,7 @@ jobs:
         if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && env.ssh-private-key != '' }}
         env:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        uses: webfactory/ssh-agent@v0.5.4
+        uses: webfactory/ssh-agent@v0.5.4  # zizmor: ignore[unpinned-uses]
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
@@ -67,7 +67,7 @@ jobs:
       # Hub's rate limit, which testcontainers surfaces as "pull access denied".
       - name: Login to DockerHub
         if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_PASSWORD != '' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3  # zizmor: ignore[unpinned-uses]
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
@@ -82,7 +82,7 @@ jobs:
 
       - name: Generate Code Coverage Summary Report
         if: steps.changed-go-files.outputs.any_changed == 'true'
-        uses: irongut/CodeCoverageSummary@v1.3.0
+        uses: irongut/CodeCoverageSummary@v1.3.0  # zizmor: ignore[unpinned-uses]
         with:
           filename: coverage.cobertura.xml
           badge: true
@@ -94,7 +94,7 @@ jobs:
           thresholds: "50 75"
 
       - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v2  # zizmor: ignore[unpinned-uses]
         if: ${{ steps.changed-go-files.outputs.any_changed == 'true' && github.event_name == 'pull_request' }}
         with:
           recreate: true

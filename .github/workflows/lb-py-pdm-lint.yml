@@ -19,14 +19,14 @@ jobs:
     name: Lint and Check Formatting
     timeout-minutes: 15
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
       - name: Set up Python Environment
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6  # zizmor: ignore[unpinned-uses]
         with:
           python-version: ${{ inputs.python-version }}
       - name: Set up PDM
-        uses: pdm-project/setup-pdm@v4
+        uses: pdm-project/setup-pdm@v4  # zizmor: ignore[unpinned-uses]
         with:
           python-version: ${{ inputs.python-version }}
           cache: true
@@ -34,17 +34,17 @@ jobs:
       - name: Install Dependencies
         run: pdm install
       - name: Run Flake8 Linter
-        uses: py-actions/flake8@v2
+        uses: py-actions/flake8@v2  # zizmor: ignore[unpinned-uses]
         with:
           path: "./${{ inputs.SRC_PATH }}"
           ignore: "E501,E721,W503,E203"
       - name: Check Formatting with Black
-        uses: psf/black@stable
+        uses: psf/black@stable  # zizmor: ignore[unpinned-uses]
         with:
           options: "--check --verbose"
           src: "./${{ inputs.SRC_PATH }}"
           version: ${{ inputs.black-version }}
       - name: Check Import Sorting with isort
-        uses: isort/isort-action@v1.1.1
+        uses: isort/isort-action@v1.1.1  # zizmor: ignore[unpinned-uses]
         with:
           sortPaths: "./${{ inputs.SRC_PATH }}"

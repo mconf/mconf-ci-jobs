@@ -23,11 +23,11 @@ jobs:
     name: Test and Check Coverage
     timeout-minutes: 15
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
       - name: Get Modified Python Files
         id: changed-python-files
-        uses: tj-actions/changed-files@v47
+        uses: tj-actions/changed-files@v47  # zizmor: ignore[unpinned-uses]
         with:
           files: |
             **/*.py
@@ -36,12 +36,12 @@ jobs:
             pyproject.toml
       - name: Set up Python Environment
         if: steps.changed-python-files.outputs.any_changed == 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6  # zizmor: ignore[unpinned-uses]
         with:
           python-version: ${{ inputs.python-version }}
       - name: Set up PDM
         if: steps.changed-python-files.outputs.any_changed == 'true'
-        uses: pdm-project/setup-pdm@v4
+        uses: pdm-project/setup-pdm@v4  # zizmor: ignore[unpinned-uses]
         with:
           python-version: ${{ inputs.python-version }}
           cache: true
@@ -51,18 +51,18 @@ jobs:
         run: pdm install
       - name: Load .env File
         if: steps.changed-python-files.outputs.any_changed == 'true'
-        uses: c-py/action-dotenv-to-setenv@v5
+        uses: c-py/action-dotenv-to-setenv@v5  # zizmor: ignore[unpinned-uses]
         with:
           env-file: ${{ inputs.env-file }}
       - name: Run Tests
         if: steps.changed-python-files.outputs.any_changed == 'true'
-        run: pdm run coverage run --source=${{ inputs.SRC_PATH }} --omit=${{ inputs.SRC_PATH }}/app.py -m pytest -v ${{ inputs.TESTS_PATH }} --ignore=${{ inputs.TESTS_PATH }}/black-box/
+        run: pdm run coverage run --source=${{ inputs.SRC_PATH }} --omit=${{ inputs.SRC_PATH }}/app.py -m pytest -v ${{ inputs.TESTS_PATH }} --ignore=${{ inputs.TESTS_PATH }}/black-box/  # zizmor: ignore[template-injection]
       - name: Generate Coverage XML Report
         if: steps.changed-python-files.outputs.any_changed == 'true'
         run: pdm run coverage xml
       - name: Upload Coverage Report
         if: ${{ steps.changed-python-files.outputs.any_changed == 'true' && github.event_name == 'pull_request' }}
-        uses: orgoro/coverage@v3.2
+        uses: orgoro/coverage@v3.2  # zizmor: ignore[unpinned-uses]
         with:
           coverageFile: coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}

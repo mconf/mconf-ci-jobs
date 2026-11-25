@@ -30,14 +30,14 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
         with:
           fetch-depth: 0
 
       - name: Prepare tag
         id: prepare
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           version="${{ inputs.version }}"
           tag_prefix="${{ inputs.tag_prefix }}"
 
@@ -53,7 +53,7 @@ jobs:
 
       - name: Check if tag exists
         id: check
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           tag_name="${{ steps.prepare.outputs.tag_name }}"
 
           if git rev-parse "$tag_name" >/dev/null 2>&1; then
@@ -64,7 +64,7 @@ jobs:
           fi
 
       - name: Create and push tag
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           tag_name="${{ steps.prepare.outputs.tag_name }}"
           annotation="${{ inputs.annotation_prefix }} $tag_name"
 

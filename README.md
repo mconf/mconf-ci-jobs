@@ -48,6 +48,7 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 | **all-ruby-lint** | Lint | Ruby, RuboCop | | | | | | Full RuboCop by default, command input for binstubs, libpq-dev |
 | **all-ruby-scan** | Scan | Ruby, Brakeman, bundler-audit | | ✓ | | | | Fails on Brakeman warnings by default, gem advisory audit |
 | **all-trufflehog** | Scan | TruffleHog | | ✓ | | | | Git history secret scan, verified+unknown results |
+| **all-zizmor** | Scan | zizmor | | ✓ | | | | Workflow security audit, fails on high severity, PR annotations |
 | **data-py-uv-lint** | Lint | Python, Flake8, Black, isort, uv | | | | | | uv-based dependency management |
 | **data-py-uv-tests** | Test | Python, pytest, uv | | | ✓ | | | uv-based dependency management, configurable pytest markers |
 | **lb-go-build** | Build | Go | | | | ✓ | | CGO, private modules, build-essential |
@@ -156,6 +157,9 @@ See [guidelines/README.md](guidelines/README.md) for a complete index.
 * `all-trufflehog.yml`
   Scans git history for leaked secrets and credentials using TruffleHog. Reports verified and unknown results. Requires full git history (`fetch-depth: 0`).
   **Usage:** See [`examples/all-trufflehog.yml`](examples/all-trufflehog.yml)
+* `all-zizmor.yml`
+  Audits the repository's GitHub Actions workflows with zizmor (unpinned actions, template injection, credential persistence, excessive permissions). Reports findings of every severity as annotations with rule, file and line, but fails the job only on high severity (GitHub limits how many annotations it shows per step; the full list goes to the job summary). Existing findings are frozen with `# zizmor: ignore[<rule>]` comments; in a multi-line `run: |` block the comment goes on the `run: |` line and covers the whole block. It also runs on this repository's own pull requests, on `ubuntu-latest`. Callers need a `.github/zizmor.yml` allowing `mconf/*` by ref, or their own `@main` calls fail (see the example).
+  **Usage:** See [`examples/all-zizmor.yml`](examples/all-zizmor.yml)
 * `lb-scan.yml`
   Scans repository filesystem for security vulnerabilities using Trivy. Requires `pull-requests: write` permission.
   **Usage:** See [`examples/lb-scan.yml`](examples/lb-scan.yml)

@@ -61,7 +61,7 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4  # zizmor: ignore[artipacked,unpinned-uses]
 
       - name: Install flux and kubeconform
         run: |

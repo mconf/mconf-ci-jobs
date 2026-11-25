@@ -67,17 +67,17 @@ jobs:
       EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
       CONFIG_FILE: ${{ inputs.config-file }}
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Set up Python Environment
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6  # zizmor: ignore[unpinned-uses]
         with:
           python-version: ${{ inputs.python-version }}
 
       - name: Install Bandit
         # [toml] extra is what lets `config-file: pyproject.toml` be read.
-        run: pip install "bandit[toml]==${{ inputs.bandit-version }}"
+        run: pip install "bandit[toml]==${{ inputs.bandit-version }}"  # zizmor: ignore[template-injection]
 
       - name: Run Bandit
         id: bandit
@@ -143,7 +143,7 @@ jobs:
 
       - name: Upload Bandit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4  # zizmor: ignore[unpinned-uses]
         with:
           name: bandit-report
           path: |
