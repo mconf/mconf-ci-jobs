@@ -28,36 +28,32 @@ jobs:
         with:
           persist-credentials: false
 
-      # Reports every severity as annotations; zizmor exits non-zero on any
-      # finding, so the last step decides the job (high = ::error)
+      # Fails the job only on high severity, as the card policy asks
       - name: Run zizmor
-        id: zizmor
         uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
-        continue-on-error: true
         with:
           advanced-security: false
           annotations: true
+          min-severity: high
 
-      # GitHub caps annotations per step; the action keeps the full output here
-      - name: List findings in the job summary
+      # Reruns the binary the action downloaded and verified, without exit codes,
+      # so lower findings show up without a red "exit code" annotation
+      - name: Report all findings
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          grep -q '^::[a-z]* file=' "$RUNNER_TEMP/zizmor" 2>/dev/null || exit 0
+          zizmor=$(ls "$RUNNER_TEMP"/zizmor-wheel/unpacked/zizmor-*.data/scripts/zizmor 2>/dev/null | head -1)
+          if [ ! -x "$zizmor" ]; then
+            echo "::warning::zizmor binary not found in the action's folder, skipping the full report"
+            exit 0
+          fi
+          "$zizmor" --format=github --no-exit-codes --color=never . > "$RUNNER_TEMP/zizmor-all"
+          # High findings were already annotated by the action
+          grep -v '^::error file=' "$RUNNER_TEMP/zizmor-all" || true
+          grep -q '^::[a-z]* file=' "$RUNNER_TEMP/zizmor-all" || exit 0
           {
             echo '| Level | Rule | File | Line | Finding |'
             echo '|---|---|---|---|---|'
-            sed -n 's/^::\([a-z]*\) file=\([^,]*\),line=\([0-9]*\),title=\([^:]*\)::[^:]*:[0-9]*: \(.*\)$/| \1 | `\4` | `\2` | \3 | \5 |/p' "$RUNNER_TEMP/zizmor"
+            sed -n 's/^::\([a-z]*\) file=\([^,]*\),line=\([0-9]*\),title=\([^:]*\)::[^:]*:[0-9]*: \(.*\)$/| \1 | `\4` | `\2` | \3 | \5 |/p' "$RUNNER_TEMP/zizmor-all"
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # A failed run with no findings means zizmor itself broke, not a pass
-      - name: Fail on high-severity findings
-        env:
-          ZIZMOR_OUTCOME: ${{ steps.zizmor.outcome }}
-        run: |
-          if grep -q '^::error file=' "$RUNNER_TEMP/zizmor" 2>/dev/null; then
-            echo "High-severity findings, see the annotations and the job summary"
-            exit 1
-          fi
-          if [ "$ZIZMOR_OUTCOME" = failure ] && ! grep -q '^::[a-z]* file=' "$RUNNER_TEMP/zizmor" 2>/dev/null; then
-            echo "zizmor failed without reporting findings, see the Run zizmor step"
-            exit 1
-          fi
