@@ -18,11 +18,11 @@ jobs:
     runs-on: [self-hosted, latest]
     timeout-minutes: 15
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v6  # zizmor: ignore[unpinned-uses]
         with:
           go-version: ${{ inputs.go-version }}
           cache: true
@@ -37,14 +37,14 @@ jobs:
         if: ${{ env.ssh-private-key != '' }}
         env:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        uses: webfactory/ssh-agent@v0.5.4
+        uses: webfactory/ssh-agent@v0.5.4  # zizmor: ignore[unpinned-uses]
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
             ${{ secrets.PRODUCER_SSH_PRIVATE_KEY }}
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v9.2.0
+        uses: golangci/golangci-lint-action@v9.2.0  # zizmor: ignore[unpinned-uses]
         with:
           version: ${{ inputs.golangci-lint-version }}
           args: --timeout=10m

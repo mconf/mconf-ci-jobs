@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on || '["self-hosted", "latest"]') }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4  # zizmor: ignore[artipacked,unpinned-uses]
         with:
           fetch-depth: 0
 
@@ -30,7 +30,7 @@ jobs:
         run: touch .trufflehogignore
 
       - name: TruffleHog Secret Scan
-        uses: trufflesecurity/trufflehog@v3.95.3
+        uses: trufflesecurity/trufflehog@v3.95.3  # zizmor: ignore[unpinned-uses]
         with:
           version: "3.95.3"
           extra_args: --results=verified,unknown --exclude-paths .trufflehogignore

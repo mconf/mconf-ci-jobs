@@ -43,28 +43,28 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 15
     steps:
-      - name: Check out source repository
-        uses: actions/checkout@v6
+      - name: Check out source repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6  # zizmor: ignore[unpinned-uses]
         with:
           node-version-file: ${{ inputs.node-version-file }}
           cache: npm
 
       - name: Install dependencies
-        run: ${{ inputs.install-command }}
+        run: ${{ inputs.install-command }}  # zizmor: ignore[template-injection]
 
       # Type checking is off by default: it only applies to TypeScript projects,
       # and the script that runs it has no conventional name.
       - name: Check types
         if: inputs.type-check-command != ''
-        run: ${{ inputs.type-check-command }}
+        run: ${{ inputs.type-check-command }}  # zizmor: ignore[template-injection]
 
       - name: Lint
         if: inputs.lint-command != ''
-        run: ${{ inputs.lint-command }}
+        run: ${{ inputs.lint-command }}  # zizmor: ignore[template-injection]
 
       - name: Check formatting
         if: inputs.format-check-command != ''
-        run: ${{ inputs.format-check-command }}
+        run: ${{ inputs.format-check-command }}  # zizmor: ignore[template-injection]

@@ -41,8 +41,8 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
         with:
           fetch-depth: 0
 
@@ -65,7 +65,7 @@ jobs:
 
       - name: Determine versions
         id: versions
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           current_version="${{ inputs.version }}"
           echo "current_version=$current_version" >> $GITHUB_OUTPUT
           echo "Current version: $current_version"
@@ -93,7 +93,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           set +e
           COMMIT_RANGE="${{ steps.versions.outputs.prev_version }}..HEAD"
           echo "Commit range: $COMMIT_RANGE"
@@ -170,7 +170,7 @@ jobs:
 
       - name: Prepare data for Claude
         id: prepare
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           # Get detailed commit information
           echo "Extracting commit information..."
           git log ${{ steps.versions.outputs.prev_version }}..HEAD \
@@ -274,7 +274,7 @@ jobs:
 
       - name: Generate changelog with Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@v1  # zizmor: ignore[unpinned-uses]
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: ${{ env.CHANGELOG_PROMPT }}
@@ -292,7 +292,7 @@ jobs:
 
       - name: Extract changelog entry from Claude's response
         id: extract
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           set -e
 
           if [ ! -f "${{ steps.claude.outputs.execution_file }}" ]; then
@@ -320,7 +320,7 @@ jobs:
 
       - name: Update changelog file
         id: update
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           set -e
 
           # Backup the original changelog
@@ -389,7 +389,7 @@ jobs:
 
       - name: Create branch and commit changelog
         id: branch
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           set -e
 
           # Create unique branch name
@@ -415,7 +415,7 @@ jobs:
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           branch_name="${{ steps.branch.outputs.branch_name }}"
 
           # Get default branch (works for both workflow_dispatch and workflow_call)

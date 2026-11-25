@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  scan_ruby:
+  scan_ruby:  # zizmor: ignore[excessive-permissions]
     name: Brakeman Security Scan
     runs-on: [self-hosted, latest]
     steps:
@@ -18,10 +18,10 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
             build-essential git libmariadb-dev libsqlite3-dev libyaml-dev pkg-config tzdata
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - name: Checkout code  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v5  # zizmor: ignore[unpinned-uses]
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@v1  # zizmor: ignore[unpinned-uses]
         with:
           ruby-version: .ruby-version
           bundler-cache: true

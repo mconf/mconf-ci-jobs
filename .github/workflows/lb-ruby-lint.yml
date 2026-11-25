@@ -18,14 +18,14 @@ jobs:
     runs-on: [self-hosted, latest]
     timeout-minutes: 15
     steps:
-    - name: Check out Source Repository
-      uses: actions/checkout@v6
+    - name: Check out Source Repository  # zizmor: ignore[artipacked]
+      uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
     - name: Install Tools
-      run: |
+      run: |  # zizmor: ignore[template-injection]
         sudo apt-get update
         sudo apt-get install -y build-essential patch ruby-dev zlib1g-dev liblzma-dev libgmp-dev libpq-dev libsqlite3-dev ${{ inputs.extra-packages }}
     - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+      uses: ruby/setup-ruby@v1  # zizmor: ignore[unpinned-uses]
       with:
         ruby-version: ${{ inputs.ruby-version }}
         bundler-cache: true

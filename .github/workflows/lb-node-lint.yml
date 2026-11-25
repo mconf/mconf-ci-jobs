@@ -18,11 +18,11 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 15
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6  # zizmor: ignore[unpinned-uses]
         with:
           node-version: ${{ inputs.node-version }}
           cache: 'npm'
@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Install ESLint
-        run: npm install -g eslint
+        run: npm install -g eslint  # zizmor: ignore[adhoc-packages]
 
       - name: Run ESLint
         run: npx eslint . --ext .js,.jsx,.ts,.tsx

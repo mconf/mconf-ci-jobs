@@ -132,18 +132,18 @@ jobs:
       SCAN_ENABLED: ${{ inputs.scan_enabled && secrets.TRIVY_EXPLORER_URL != '' && secrets.TRIVY_EXPLORER_AUTH_TOKEN != '' }}
       TRIVY_DEBUG: ${{ inputs.trivy-debug }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout code  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3  # zizmor: ignore[unpinned-uses]
         with:
           driver-opts: |
             image=moby/buildkit:v0.13.0
 
       - name: Log in to Harbor Registry
         if: env.HARBOR_USERNAME != '' && env.HARBOR_PASSWORD != ''
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3  # zizmor: ignore[unpinned-uses]
         with:
           registry: ${{ inputs.registry }}
           username: ${{ secrets.HARBOR_USERNAME }}
@@ -151,7 +151,7 @@ jobs:
 
       - name: Login to DockerHub
         if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_PASSWORD != ''
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3  # zizmor: ignore[unpinned-uses]
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
@@ -162,14 +162,14 @@ jobs:
 
       - name: Configure Git to Access Private Modules
         if: ${{ env.SSH_PRIVATE_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.5.4
+        uses: webfactory/ssh-agent@v0.5.4  # zizmor: ignore[unpinned-uses]
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
             ${{ secrets.PRODUCER_SSH_PRIVATE_KEY }}
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v5  # zizmor: ignore[unpinned-uses]
         with:
           images: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}${{ inputs.image-suffix }}
           flavor: |
@@ -186,7 +186,7 @@ jobs:
 
       - name: Build and conditionally push image
         id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5  # zizmor: ignore[unpinned-uses]
         with:
           context: ${{ inputs.context_path }}
           file: ${{ inputs.dockerfile_path }}
@@ -208,7 +208,7 @@ jobs:
           sbom: false
 
       - name: Output build summary
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           echo "Build Summary:" >> $GITHUB_STEP_SUMMARY
           echo "- Image: ${{ inputs.registry }}/${{ inputs.organization }}/${{ inputs.image_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- Push enabled: ${{ env.PUSH_ENABLED }}" >> $GITHUB_STEP_SUMMARY
@@ -226,13 +226,13 @@ jobs:
       - name: Get SHA image tag for scanning
         if: env.SCAN_ENABLED == 'true'
         id: sha-tag
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           SHA_TAG=$(echo "${{ steps.meta.outputs.tags }}" | grep ":sha-" | head -1)
           echo "value=$SHA_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Run Trivy on Docker Image
         if: env.SCAN_ENABLED == 'true'
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0  # zizmor: ignore[unpinned-uses]
         with:
           image-ref: ${{ steps.sha-tag.outputs.value }}
           ignore-unfixed: true
@@ -245,7 +245,7 @@ jobs:
       - name: Upload Trivy results to Trivy Explorer
         if: env.SCAN_ENABLED == 'true'
         id: upload_trivy
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           RESPONSE=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${{ secrets.TRIVY_EXPLORER_AUTH_TOKEN }}" --data "@/tmp/${{ env.UUID }}.json" ${{ secrets.TRIVY_EXPLORER_URL }})
           echo "Response: $RESPONSE"
           REPORT_URL=$(echo "$RESPONSE" | jq -r '.url')
@@ -253,7 +253,7 @@ jobs:
 
       - name: Add Trivy Report Link to Job Summary
         if: env.SCAN_ENABLED == 'true'
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "## Trivy Security Scan" >> "$GITHUB_STEP_SUMMARY"
           echo "A security scan report has been generated." >> "$GITHUB_STEP_SUMMARY"

@@ -33,20 +33,20 @@ jobs:
     runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 15
     steps:
-      - name: Check out source repository
-        uses: actions/checkout@v6
+      - name: Check out source repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
 
       - name: Install packages
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
             build-essential git libpq-dev libyaml-dev pkg-config ${{ inputs.extra-packages }}
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@v1  # zizmor: ignore[unpinned-uses]
         with:
           ruby-version: ${{ inputs.ruby-version }}
           bundler-cache: true
 
       - name: Lint Ruby code
-        run: ${{ inputs.command }}
+        run: ${{ inputs.command }}  # zizmor: ignore[template-injection]

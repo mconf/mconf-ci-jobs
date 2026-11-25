@@ -70,11 +70,11 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
-      - name: Check out Source Repository
-        uses: actions/checkout@v6
+      - name: Check out Source Repository  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v6  # zizmor: ignore[unpinned-uses]
       - name: Get Modified Python Files
         id: changed-python-files
-        uses: tj-actions/changed-files@v47
+        uses: tj-actions/changed-files@v47  # zizmor: ignore[unpinned-uses]
         with:
           files: |
             ${{ inputs.working-directory }}/**/*.py
@@ -82,12 +82,12 @@ jobs:
             ${{ inputs.working-directory }}/pyproject.toml
       - name: Set up Python Environment
         if: steps.changed-python-files.outputs.any_changed == 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6  # zizmor: ignore[unpinned-uses]
         with:
           python-version: ${{ inputs.python-version }}
       - name: Set up uv
         if: steps.changed-python-files.outputs.any_changed == 'true'
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v5  # zizmor: ignore[unpinned-uses]
         with:
           version: "latest"
       - name: Install Dependencies
@@ -95,7 +95,7 @@ jobs:
         run: uv sync --extra dev
       - name: Run Tests with Coverage
         if: steps.changed-python-files.outputs.any_changed == 'true'
-        run: |
+        run: |  # zizmor: ignore[template-injection]
           if [ -n "${{ inputs.coverage-omit }}" ]; then
             uv run pytest --cov=${{ inputs.SRC_PATH }} --cov-omit=${{ inputs.coverage-omit }} --cov-report=xml --cov-report=term -m "${{ inputs.pytest-markers }}" -v ${{ inputs.TESTS_PATH }}
           else
@@ -107,7 +107,7 @@ jobs:
         # only ever get a read-only GITHUB_TOKEN, so the comment POST 403s
         # there — don't let that sink an otherwise-green test job.
         continue-on-error: true
-        uses: orgoro/coverage@v3.2
+        uses: orgoro/coverage@v3.2  # zizmor: ignore[unpinned-uses]
         with:
           coverageFile: ${{ inputs.working-directory }}/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}

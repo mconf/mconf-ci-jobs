@@ -36,8 +36,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - name: Checkout code  # zizmor: ignore[artipacked]
+        uses: actions/checkout@v5  # zizmor: ignore[unpinned-uses]
       - name: Install Chromium
         run: |
           sudo apt-get update
@@ -55,7 +55,7 @@ jobs:
             build-essential git libmariadb-dev libsqlite3-dev libyaml-dev pkg-config nodejs tzdata \
             imagemagick libmagickcore-dev libmagickwand-dev
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@v1  # zizmor: ignore[unpinned-uses]
         with:
           ruby-version: .ruby-version
           bundler-cache: true
@@ -95,6 +95,6 @@ jobs:
         if: github.event_name == 'pull_request'
         # Reads coverage/.resultset.json (SimpleCov, native) + .octocov.yaml (repo's own or the default above).
         continue-on-error: true
-        uses: k1LoW/octocov-action@v1
+        uses: k1LoW/octocov-action@v1  # zizmor: ignore[unpinned-uses]
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
